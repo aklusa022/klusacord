@@ -1,0 +1,172 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useMutation, useQuery } from "convex/react";
+import { toast } from "sonner";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ServerSettingsDialog } from "@/components/server-settings/server-settings-dialog";
+import { useServerPermissions } from "@/hooks/use-server-permissions";
+import { PERMISSIONS } from "@/convex/permissions";
+import { cn } from "@/lib/utils";
+import { ChevronDown, Hash, Settings, UserPlus } from "lucide-react";
+import { useState } from "react";
+
+export function ServerSidebar({ serverId }: { serverId: Id<"servers"> }) {
+  const server = useQuery(api.servers.getServer, { serverId });
+  const categories = useQuery(api.categories.listCategories, { serverId });
+  const channels = useQuery(api.channels.listChannels, { serverId });
+  const permissions = useServerPermissions(serverId);
+  const leaveServer = useMutation(api.servers.leaveServer);
+  const deleteServer = useMutation(api.servers.deleteServer);
+  const pathname = usePathname();
+  const router = useRouter();
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settingsTab, setSettingsTab] = useState("overview");
+
+  if (!server || categories === undefined || channels === undefined) {
+    return <div className="w-60 shrink-0 border-r bg-sidebar" />;
+  }
+
+  const uncategorized = channels.filter((c) => !c.categoryId);
+  const canManageChannels = permissions.can(PERMISSIONS.MANAGE_CHANNELS);
+  const canOpenSettings =
+    permissions.isOwner ||
+    permissions.can(PERMISSIONS.MANAGE_SERVER) ||
+    permissions.can(PERMISSIONS.MANAGE_ROLES) ||
+    canManageChannels;
+
+  function openSettings(tab: string) {
+    setSettingsTab(tab);
+    setSettingsOpen(true);
+  }
+
+  async function handleLeaveOrDelete() {
+    try {
+      if (permissions.isOwner) {
+        if (!confirm(`Delete "${server?.name}"? This can't be undone.`)) return;
+        await deleteServer({ serverId });
+      } else {
+        await leaveServer({ serverId });
+      }
+      router.push("/app/friends");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Action failed");
+    }
+  }
+
+  return (
+    <div className="flex h-full w-60 shrink-0 flex-col border-r bg-sidebar">
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          render={
+            <button className="flex h-12 shrink-0 items-center justify-between border-b px-4 font-semibold shadow-sm hover:bg-accent/50" />
+          }
+        >
+          <span className="truncate">{server.name}</span>
+          <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="w-56">
+          <DropdownMenuItem onClick={() => openSettings("invites")}>
+            <UserPlus className="h-4 w-4" /> Invite People
+          </DropdownMenuItem>
+          {canOpenSettings && (
+            <DropdownMenuItem onClick={() => openSettings("channels")}>
+              <Settings className="h-4 w-4" /> Server Settings
+            </DropdownMenuItem>
+          )}
+          <DropdownMenuItem variant="destructive" onClick={handleLeaveOrDelete}>
+            {permissions.isOwner ? "Delete Server" : "Leave Server"}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <ScrollArea className="flex-1 px-2 py-2">
+        <div className="flex flex-col gap-3">
+          {uncategorized.length > 0 && (
+            <div className="flex flex-col gap-0.5">
+              {uncategorized
+                .sort((a, b) => a.position - b.position)
+                .map((channel) => (
+                  <ChannelLink
+                    key={channel._id}
+                    serverId={serverId}
+                    channel={channel}
+                    active={pathname === `/app/servers/${serverId}/channels/${channel._id}`}
+                  />
+                ))}
+            </div>
+          )}
+          {categories
+            .sort((a, b) => a.position - b.position)
+            .map((category) => (
+              <div key={category._id}>
+                <div className="px-1 text-xs font-semibold uppercase text-muted-foreground">
+                  <span className="truncate">{category.name}</span>
+                </div>
+                <div className="mt-1 flex flex-col gap-0.5">
+                  {channels
+                    .filter((c) => c.categoryId === category._id)
+                    .sort((a, b) => a.position - b.position)
+                    .map((channel) => (
+                      <ChannelLink
+                        key={channel._id}
+                        serverId={serverId}
+                        channel={channel}
+                        active={pathname === `/app/servers/${serverId}/channels/${channel._id}`}
+                      />
+                    ))}
+                </div>
+              </div>
+            ))}
+          {canManageChannels && (
+            <button
+              onClick={() => openSettings("channels")}
+              className="px-1 text-left text-xs font-medium text-muted-foreground hover:text-foreground hover:underline"
+            >
+              + Add a category or channel
+            </button>
+          )}
+        </div>
+      </ScrollArea>
+
+      <ServerSettingsDialog
+        serverId={serverId}
+        open={settingsOpen}
+        onOpenChange={setSettingsOpen}
+        defaultTab={settingsTab}
+      />
+    </div>
+  );
+}
+
+function ChannelLink({
+  serverId,
+  channel,
+  active,
+}: {
+  serverId: Id<"servers">;
+  channel: { _id: Id<"channels">; name: string };
+  active: boolean;
+}) {
+  return (
+    <Link
+      href={`/app/servers/${serverId}/channels/${channel._id}`}
+      className={cn(
+        "flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+        active && "bg-accent text-accent-foreground",
+      )}
+    >
+      <Hash className="h-4 w-4 shrink-0" />
+      <span className="truncate">{channel.name}</span>
+    </Link>
+  );
+}

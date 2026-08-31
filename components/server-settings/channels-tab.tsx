@@ -1,0 +1,165 @@
+"use client";
+
+import { useState } from "react";
+import { useMutation, useQuery } from "convex/react";
+import { toast } from "sonner";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useServerPermissions } from "@/hooks/use-server-permissions";
+import { PERMISSIONS } from "@/convex/permissions";
+import { CreateCategoryDialog } from "@/components/create-category-dialog";
+import { CreateChannelDialog } from "@/components/create-channel-dialog";
+import { FolderOpen, Hash, Trash2 } from "lucide-react";
+
+export function ChannelsTab({ serverId }: { serverId: Id<"servers"> }) {
+  const categories = useQuery(api.categories.listCategories, { serverId });
+  const channels = useQuery(api.channels.listChannels, { serverId });
+  const deleteCategory = useMutation(api.categories.deleteCategory);
+  const deleteChannel = useMutation(api.channels.deleteChannel);
+  const permissions = useServerPermissions(serverId);
+  const canManage = permissions.can(PERMISSIONS.MANAGE_CHANNELS);
+  const [pending, setPending] = useState<string | null>(null);
+
+  if (!categories || !channels) return null;
+
+  const uncategorized = channels
+    .filter((c) => !c.categoryId)
+    .sort((a, b) => a.position - b.position);
+  const sortedCategories = [...categories].sort((a, b) => a.position - b.position);
+
+  async function handleDeleteChannel(channelId: Id<"channels">, name: string) {
+    if (!confirm(`Delete #${name}? All of its messages will be lost.`)) return;
+    setPending(channelId);
+    try {
+      await deleteChannel({ channelId });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to delete channel");
+    } finally {
+      setPending(null);
+    }
+  }
+
+  async function handleDeleteCategory(categoryId: Id<"categories">, name: string) {
+    if (
+      !confirm(
+        `Delete the "${name}" category? Every channel in it (and its messages) will be deleted too.`,
+      )
+    )
+      return;
+    setPending(categoryId);
+    try {
+      await deleteCategory({ categoryId });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to delete category");
+    } finally {
+      setPending(null);
+    }
+  }
+
+  return (
+    <ScrollArea className="h-full">
+      <div className="space-y-6 p-1 pr-4">
+        {canManage && (
+          <div className="flex items-center gap-2">
+            <CreateCategoryDialog serverId={serverId} />
+            <CreateChannelDialog serverId={serverId} />
+          </div>
+        )}
+
+        {uncategorized.length > 0 && (
+          <div className="space-y-1">
+            <p className="text-xs font-semibold uppercase text-muted-foreground">
+              No category
+            </p>
+            {uncategorized.map((channel) => (
+              <ChannelRow
+                key={channel._id}
+                name={channel.name}
+                disabled={pending === channel._id}
+                canManage={canManage}
+                onDelete={() => handleDeleteChannel(channel._id, channel.name)}
+              />
+            ))}
+          </div>
+        )}
+
+        {sortedCategories.map((category) => (
+          <div key={category._id} className="space-y-1">
+            <div className="flex items-center justify-between gap-2">
+              <p className="flex items-center gap-1.5 text-xs font-semibold uppercase text-muted-foreground">
+                <FolderOpen className="h-3.5 w-3.5" />
+                {category.name}
+              </p>
+              {canManage && (
+                <div className="flex items-center gap-1">
+                  <CreateChannelDialog serverId={serverId} categoryId={category._id} />
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-6 w-6 text-destructive hover:text-destructive"
+                    disabled={pending === category._id}
+                    onClick={() => handleDeleteCategory(category._id, category.name)}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              )}
+            </div>
+            {channels
+              .filter((c) => c.categoryId === category._id)
+              .sort((a, b) => a.position - b.position)
+              .map((channel) => (
+                <ChannelRow
+                  key={channel._id}
+                  name={channel.name}
+                  disabled={pending === channel._id}
+                  canManage={canManage}
+                  onDelete={() => handleDeleteChannel(channel._id, channel.name)}
+                />
+              ))}
+          </div>
+        ))}
+
+        {sortedCategories.length === 0 && uncategorized.length === 0 && (
+          <p className="text-sm text-muted-foreground">
+            No categories or channels yet — create one above.
+          </p>
+        )}
+      </div>
+    </ScrollArea>
+  );
+}
+
+function ChannelRow({
+  name,
+  canManage,
+  disabled,
+  onDelete,
+}: {
+  name: string;
+  canManage: boolean;
+  disabled: boolean;
+  onDelete: () => void;
+}) {
+  return (
+    <div className="flex items-center justify-between rounded-md px-2 py-1.5 hover:bg-accent/50">
+      <span className="flex min-w-0 items-center gap-1.5 text-sm">
+        <Hash className="h-4 w-4 shrink-0 text-muted-foreground" />
+        <span className="truncate">{name}</span>
+      </span>
+      {canManage && (
+        <Button
+          size="icon"
+          variant="ghost"
+          className="h-6 w-6 text-destructive hover:text-destructive"
+          disabled={disabled}
+          onClick={onDelete}
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+        </Button>
+      )}
+    </div>
+  );
+}
