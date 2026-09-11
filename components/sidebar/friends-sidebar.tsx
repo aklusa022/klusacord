@@ -22,6 +22,7 @@ export function FriendsSidebar() {
       <div className="p-2">
         <Link
           href="/app/friends"
+          prefetch={false}
           className={cn(
             "flex items-center gap-2 rounded-md px-2 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground",
             pathname === "/app/friends" && "bg-accent text-accent-foreground",
@@ -42,6 +43,7 @@ export function FriendsSidebar() {
               <Link
                 key={c._id}
                 href={`/app/dm/${c._id}`}
+                prefetch={false}
                 className={cn(
                   "flex items-center gap-2 rounded-md px-2 py-2 text-sm hover:bg-accent hover:text-accent-foreground",
                   pathname === `/app/dm/${c._id}` &&

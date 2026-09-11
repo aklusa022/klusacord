@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect } from "react";
+import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation, usePaginatedQuery, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -10,7 +10,8 @@ import { useServerPermissions } from "@/hooks/use-server-permissions";
 import { PERMISSIONS } from "@/convex/permissions";
 import { ChatPanel } from "@/components/chat/chat-panel";
 import { VoiceChannelView } from "@/components/voice/voice-channel-view";
-import { HashIcon } from "@phosphor-icons/react";
+import { ChannelHeader } from "@/components/server/channel-header";
+import { ChannelSidePanel } from "@/components/server/channel-side-panel";
 
 export default function ChannelPage({
   params,
@@ -44,6 +45,7 @@ export default function ChannelPage({
   const sendMessage = useMutation(api.messages.sendMessage);
   const editMessage = useMutation(api.messages.editMessage);
   const deleteMessage = useMutation(api.messages.deleteMessage);
+  const [rightPanel, setRightPanel] = useState<"members" | "search" | null>("members");
 
   if (!user || channelMissing) return null;
 
@@ -52,27 +54,42 @@ export default function ChannelPage({
   }
 
   return (
-    <ChatPanel
-      header={
-        <div className="flex h-12 shrink-0 items-center gap-1.5 border-b px-4 font-semibold">
-          <HashIcon className="h-4 w-4 text-muted-foreground" />
-          {channel?.name ?? "channel"}
-        </div>
-      }
-      messages={results}
-      hasMore={status === "CanLoadMore"}
-      isLoadingMore={status === "LoadingMore"}
-      onLoadMore={() => loadMore(30)}
-      currentUserId={user._id}
-      canManageMessages={permissions.can(PERMISSIONS.MANAGE_MESSAGES)}
-      onSend={(content) => sendMessage({ channelId: cId, content })}
-      onEdit={(messageId, content) =>
-        editMessage({ messageId: messageId as Id<"messages">, content })
-      }
-      onDelete={(messageId) =>
-        deleteMessage({ messageId: messageId as Id<"messages"> })
-      }
-      placeholder={channel ? `Message #${channel.name}` : "Message…"}
-    />
+    <div className="flex h-full min-w-0 flex-1">
+      <div className="flex min-w-0 flex-1 flex-col">
+        <ChatPanel
+          header={
+            <ChannelHeader
+              channelName={channel?.name ?? "channel"}
+              rightPanel={rightPanel}
+              onToggle={(mode) =>
+                setRightPanel((prev) => (prev === mode ? null : mode))
+              }
+            />
+          }
+          messages={results}
+          hasMore={status === "CanLoadMore"}
+          isLoadingMore={status === "LoadingMore"}
+          onLoadMore={() => loadMore(30)}
+          currentUserId={user._id}
+          canManageMessages={permissions.can(PERMISSIONS.MANAGE_MESSAGES)}
+          onSend={(content) => sendMessage({ channelId: cId, content })}
+          onEdit={(messageId, content) =>
+            editMessage({ messageId: messageId as Id<"messages">, content })
+          }
+          onDelete={(messageId) =>
+            deleteMessage({ messageId: messageId as Id<"messages"> })
+          }
+          placeholder={channel ? `Message #${channel.name}` : "Message…"}
+        />
+      </div>
+      {rightPanel && (
+        <ChannelSidePanel
+          mode={rightPanel}
+          serverId={sId}
+          channelId={cId}
+          className="w-60 shrink-0"
+        />
+      )}
+    </div>
   );
 }

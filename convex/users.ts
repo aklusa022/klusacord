@@ -8,6 +8,8 @@ import {
 } from "./_generated/server";
 import { Doc } from "./_generated/dataModel";
 
+export const DEFAULT_AVATAR_URL = "https://cdn.discordapp.com/embed/avatars/1.png";
+
 /**
  * Resolves the Convex `users` doc for the currently authenticated Clerk
  * identity. Throws if there's no identity, or if the Clerk webhook hasn't
@@ -53,7 +55,7 @@ export async function getOrCreateCurrentUser(
     clerkId: identity.subject,
     username,
     displayName: identity.name ?? username,
-    imageUrl: identity.pictureUrl ?? "",
+    imageUrl: identity.pictureUrl || DEFAULT_AVATAR_URL,
   });
   return (await ctx.db.get(userId))!;
 }
@@ -146,6 +148,33 @@ export const updateProfile = mutation({
       await ctx.db.patch(me._id, patch);
     }
     return await ctx.db.get(me._id);
+  },
+});
+
+export const setStatus = mutation({
+  args: {
+    status: v.union(
+      v.literal("online"),
+      v.literal("idle"),
+      v.literal("dnd"),
+      v.literal("invisible"),
+    ),
+  },
+  handler: async (ctx, args) => {
+    const me = await getOrCreateCurrentUser(ctx);
+    await ctx.db.patch(me._id, { status: args.status });
+    return null;
+  },
+});
+
+export const backfillMissingAvatars = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const users = await ctx.db.query("users").collect();
+    for (const u of users) {
+      if (!u.imageUrl) await ctx.db.patch(u._id, { imageUrl: DEFAULT_AVATAR_URL });
+    }
+    return null;
   },
 });
 

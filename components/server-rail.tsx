@@ -70,6 +70,7 @@ function RailButton({
       render={
         <Link
           href={href}
+          prefetch={false}
           className={cn(
             "flex h-12 w-12 items-center justify-center rounded-2xl bg-secondary transition-all hover:rounded-xl hover:bg-primary hover:text-primary-foreground",
             active && "rounded-xl bg-primary text-primary-foreground",

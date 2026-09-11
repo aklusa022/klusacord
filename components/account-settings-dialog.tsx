@@ -6,7 +6,7 @@ import { useClerk } from "@clerk/nextjs";
 import { toast } from "sonner";
 import { api } from "@/convex/_generated/api";
 import { Doc } from "@/convex/_generated/dataModel";
-import { Dialog, Input } from "@cloudflare/kumo";
+import { Dialog, Input, Select } from "@cloudflare/kumo";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { UserAvatar } from "@/components/user-avatar";
@@ -25,7 +25,15 @@ export function AccountSettingsDialog({
   const [username, setUsername] = useState(user.username);
   const [saving, setSaving] = useState(false);
   const updateProfile = useMutation(api.users.updateProfile);
+  const setStatus = useMutation(api.users.setStatus);
   const clerk = useClerk();
+
+  const STATUS_OPTIONS = [
+    { value: "online", label: "Online" },
+    { value: "idle", label: "Idle" },
+    { value: "dnd", label: "Do Not Disturb" },
+    { value: "invisible", label: "Invisible" },
+  ] as const;
 
   useEffect(() => {
     if (open) {
@@ -89,6 +97,15 @@ export function AccountSettingsDialog({
             onChange={(e) => setUsername(e.target.value)}
             maxLength={32}
             description="Friends add you by this exact username."
+          />
+          <Select
+            label="Status"
+            className="w-full min-w-0"
+            items={STATUS_OPTIONS}
+            value={user.status ?? "online"}
+            onValueChange={(v) =>
+              v && setStatus({ status: v as "online" | "idle" | "dnd" | "invisible" })
+            }
           />
           <Button disabled={!dirty || saving} onClick={handleSave} className="w-full">
             Save changes

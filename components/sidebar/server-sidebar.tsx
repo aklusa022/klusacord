@@ -189,6 +189,7 @@ function ChannelLink({
     <div className="flex flex-col gap-1">
       <Link
         href={`/app/servers/${serverId}/channels/${channel._id}`}
+        prefetch={false}
         onClick={handleClick}
         className={cn(
           "flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground",

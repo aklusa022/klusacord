@@ -103,6 +103,24 @@ export function VoiceCallProvider({ children }: { children: ReactNode }) {
     };
   }, [meeting, reset]);
 
+  // Derive mute/camera state from the SDK itself rather than only from our
+  // own toggle handlers — the in-call view's mic/camera buttons now live
+  // inside RealtimeKit's own `RtkControlbar`, which calls the SDK directly,
+  // so this hook's state would otherwise go stale whenever that's used.
+  useEffect(() => {
+    if (!meeting) return;
+    const onAudioUpdate = ({ audioEnabled }: { audioEnabled: boolean }) =>
+      setIsMuted(!audioEnabled);
+    const onVideoUpdate = ({ videoEnabled }: { videoEnabled: boolean }) =>
+      setIsCameraOn(videoEnabled);
+    meeting.self.on("audioUpdate", onAudioUpdate);
+    meeting.self.on("videoUpdate", onVideoUpdate);
+    return () => {
+      meeting.self.off("audioUpdate", onAudioUpdate);
+      meeting.self.off("videoUpdate", onVideoUpdate);
+    };
+  }, [meeting]);
+
   useEffect(() => {
     if (status !== "connected") return;
     const interval = setInterval(() => void heartbeat({}), HEARTBEAT_INTERVAL_MS);

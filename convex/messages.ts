@@ -40,6 +40,35 @@ export const listMessages = query({
   },
 });
 
+export const searchMessages = query({
+  args: { channelId: v.id("channels"), query: v.string() },
+  handler: async (ctx, args) => {
+    const me = await getCurrentUserOrThrow(ctx);
+    const channel = await ctx.db.get(args.channelId);
+    if (!channel) throw new Error("Channel not found");
+    await requireChannelPermission(
+      ctx,
+      args.channelId,
+      me._id,
+      PERMISSIONS.VIEW_CHANNELS,
+    );
+    const query = args.query.trim();
+    if (!query) return [];
+    const results = await ctx.db
+      .query("messages")
+      .withSearchIndex("search_content", (q) =>
+        q.search("content", query).eq("channelId", args.channelId),
+      )
+      .take(25);
+    return await Promise.all(
+      results.map(async (m) => ({
+        ...m,
+        author: await ctx.db.get(m.authorId),
+      })),
+    );
+  },
+});
+
 export const sendMessage = mutation({
   args: { channelId: v.id("channels"), content: v.string() },
   handler: async (ctx, args) => {

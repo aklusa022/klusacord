@@ -1,6 +1,7 @@
 import { httpRouter } from "convex/server";
 import { httpAction, ActionCtx } from "./_generated/server";
 import { internal } from "./_generated/api";
+import { DEFAULT_AVATAR_URL } from "./users";
 import { Id } from "./_generated/dataModel";
 import { Webhook } from "svix";
 
@@ -30,7 +31,7 @@ http.route({
           clerkId: data.id,
           username,
           displayName,
-          imageUrl: data.image_url ?? "",
+          imageUrl: data.image_url || DEFAULT_AVATAR_URL,
         });
         break;
       }

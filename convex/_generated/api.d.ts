@@ -17,6 +17,7 @@ import type * as http from "../http.js";
 import type * as invites from "../invites.js";
 import type * as messages from "../messages.js";
 import type * as permissions from "../permissions.js";
+import type * as presence from "../presence.js";
 import type * as roles from "../roles.js";
 import type * as servers from "../servers.js";
 import type * as users from "../users.js";
@@ -39,6 +40,7 @@ declare const fullApi: ApiFromModules<{
   invites: typeof invites;
   messages: typeof messages;
   permissions: typeof permissions;
+  presence: typeof presence;
   roles: typeof roles;
   servers: typeof servers;
   users: typeof users;
@@ -72,4 +74,6 @@ export declare const internal: FilterApi<
   FunctionReference<any, "internal">
 >;
 
-export declare const components: {};
+export declare const components: {
+  presence: import("@convex-dev/presence/_generated/component.js").ComponentApi<"presence">;
+};

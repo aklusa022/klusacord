@@ -7,6 +7,17 @@ export default defineSchema({
     username: v.string(),
     displayName: v.string(),
     imageUrl: v.string(),
+    // User-chosen status, independent of actual connection state (tracked
+    // separately by the `presence` component). "invisible" means: show me
+    // as offline to others regardless of whether I'm actually connected.
+    status: v.optional(
+      v.union(
+        v.literal("online"),
+        v.literal("idle"),
+        v.literal("dnd"),
+        v.literal("invisible"),
+      ),
+    ),
   })
     .index("by_clerkId", ["clerkId"])
     .index("by_username", ["username"]),
@@ -154,7 +165,12 @@ export default defineSchema({
     authorId: v.id("users"),
     content: v.string(),
     editedAt: v.optional(v.number()),
-  }).index("by_channel", ["channelId"]),
+  })
+    .index("by_channel", ["channelId"])
+    .searchIndex("search_content", {
+      searchField: "content",
+      filterFields: ["channelId"],
+    }),
 
   invites: defineTable({
     serverId: v.id("servers"),

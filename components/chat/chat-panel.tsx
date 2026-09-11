@@ -125,7 +125,7 @@ export function ChatPanel({
               void handleSend();
             }
           }}
-          className="h-11 rounded-lg"
+          className="h-11 w-full rounded-lg"
         />
       </div>
     </div>
@@ -194,7 +194,7 @@ function MessageRow({
                 if (e.key === "Enter") void saveEdit();
                 if (e.key === "Escape") setEditing(false);
               }}
-              className="h-8"
+              className="h-8 min-w-0 flex-1"
             />
             <Button size="sm" onClick={saveEdit}>
               Save
