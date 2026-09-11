@@ -1,13 +1,18 @@
 /*
  * Kumo's styles must load before Tailwind's own import so its @theme tokens
- * register first (see @cloudflare/kumo's README). The @source directive is
- * required because Tailwind v4 doesn't scan node_modules by default.
+ * register first (see @cloudflare/kumo's README). @import statements must be
+ * the first statements in the file (besides @charset) per the CSS spec —
+ * some stricter build pipelines (e.g. the vinext/Cloudflare build) silently
+ * drop @import rules that come after any other at-rule, so @source (needed
+ * because Tailwind v4 doesn't scan node_modules by default) must come after
+ * all @import lines, not before.
  */
-@source "../node_modules/@cloudflare/kumo/dist/**/*.{js,jsx,ts,tsx}";
 @import "@cloudflare/kumo/styles/tailwind";
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+
+@source "../node_modules/@cloudflare/kumo/dist/**/*.{js,jsx,ts,tsx}";
 
 @custom-variant dark (&:is(.dark *));
 
