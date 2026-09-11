@@ -28,5 +28,15 @@
       "pattern": "klusacord.zenfora.io",
       "custom_domain": true
     }
-  ]
+  ],
+  "vars": {
+    "CONVEX_DEPLOYMENT": "dev:rugged-woodpecker-242",
+    "NEXT_PUBLIC_CONVEX_URL": "https://rugged-woodpecker-242.convex.cloud",
+    "NEXT_PUBLIC_CONVEX_SITE_URL": "https://rugged-woodpecker-242.convex.site",
+    "NEXT_PUBLIC_SITE_URL": "https://klusacord.zenfora.io",
+    "BASE_URL": "https://klusacord.zenfora.io",
+    "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_test_Zm9uZC1tYWtvLTk5NC5jbGVyay5hY2NvdW50cy5kZXYk",
+    "CLERK_FRONTEND_API_URL": "https://fond-mako-994.clerk.accounts.dev",
+    "CLERK_JWT_ISSUER_DOMAIN": "https://fond-mako-994.clerk.accounts.dev"
+  }
 }

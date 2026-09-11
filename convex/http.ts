@@ -1,6 +1,7 @@
 import { httpRouter } from "convex/server";
 import { httpAction } from "./_generated/server";
 import { internal } from "./_generated/api";
+import { Id } from "./_generated/dataModel";
 import { Webhook } from "svix";
 
 const http = httpRouter();
@@ -47,6 +48,119 @@ http.route({
     return new Response(null, { status: 200 });
   }),
 });
+
+// Webhook deliveries are flat (no "data" wrapper) — confirmed against
+// Cloudflare's docs, and distinct from the REST API's {success, data} shape.
+type RealtimeKitEvent = {
+  event: string;
+  meeting: { id: string };
+  participant?: { peerId: string; customParticipantId: string };
+};
+
+http.route({
+  path: "/realtimekit-webhook",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const event = await verifyRealtimeKitWebhook(request);
+    if (!event) {
+      return new Response("Invalid webhook signature", { status: 400 });
+    }
+
+    switch (event.event) {
+      case "meeting.participantJoined": {
+        const participant = event.participant;
+        if (participant) {
+          await ctx.runMutation(internal.voiceChannels.reconcileParticipantJoined, {
+            rtkMeetingId: event.meeting.id,
+            userId: participant.customParticipantId as Id<"users">,
+          });
+        }
+        break;
+      }
+      case "meeting.participantLeft": {
+        const participant = event.participant;
+        if (participant) {
+          await ctx.runMutation(internal.voiceChannels.reconcileParticipantLeft, {
+            rtkMeetingId: event.meeting.id,
+            userId: participant.customParticipantId as Id<"users">,
+          });
+        }
+        break;
+      }
+      case "meeting.ended": {
+        await ctx.runMutation(internal.voiceChannels.reconcileMeetingEnded, {
+          rtkMeetingId: event.meeting.id,
+        });
+        break;
+      }
+      default:
+        break;
+    }
+
+    return new Response(null, { status: 200 });
+  }),
+});
+
+/**
+ * Verifies a Cloudflare RealtimeKit webhook delivery. Header: `rtk-signature`
+ * (base64 RSA-SHA256 over the *raw* request body — never re-serialize the
+ * parsed JSON, whitespace differences invalidate the signature). The
+ * well-known endpoint returns `{ data: { publicKey: "<PEM SPKI string>" } }`
+ * (confirmed live, not JWK as originally assumed).
+ */
+async function verifyRealtimeKitWebhook(request: Request): Promise<RealtimeKitEvent | null> {
+  const signature = request.headers.get("rtk-signature");
+  if (!signature) return null;
+
+  const rawBody = await request.text();
+
+  try {
+    const keysRes = await fetch("https://api.realtime.cloudflare.com/.well-known/webhooks.json");
+    const keysJson = (await keysRes.json()) as { data?: { publicKey?: string } };
+    const pem = keysJson.data?.publicKey;
+    if (!pem) {
+      console.error("No RealtimeKit webhook public key found");
+      return null;
+    }
+
+    const publicKey = await crypto.subtle.importKey(
+      "spki",
+      pemToDer(pem),
+      { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
+      false,
+      ["verify"],
+    );
+
+    const signatureBytes = Uint8Array.from(atob(signature), (c) => c.charCodeAt(0));
+    const bodyBytes = new TextEncoder().encode(rawBody);
+    const valid = await crypto.subtle.verify(
+      "RSASSA-PKCS1-v1_5",
+      publicKey,
+      signatureBytes,
+      bodyBytes,
+    );
+    if (!valid) {
+      console.error("RealtimeKit webhook signature verification failed");
+      return null;
+    }
+  } catch (err) {
+    console.error("RealtimeKit webhook verification error", err);
+    return null;
+  }
+
+  return JSON.parse(rawBody) as RealtimeKitEvent;
+}
+
+function pemToDer(pem: string): ArrayBuffer {
+  const base64 = pem
+    .replace(/-----BEGIN PUBLIC KEY-----/, "")
+    .replace(/-----END PUBLIC KEY-----/, "")
+    .replace(/\s+/g, "");
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes.buffer;
+}
 
 type ClerkUserPayload = {
   id: string;

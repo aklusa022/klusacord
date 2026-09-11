@@ -1,6 +1,7 @@
 "use client";
 
-import { use } from "react";
+import { use, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useMutation, usePaginatedQuery, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
@@ -8,6 +9,7 @@ import { useCurrentUser } from "@/hooks/use-current-user";
 import { useServerPermissions } from "@/hooks/use-server-permissions";
 import { PERMISSIONS } from "@/convex/permissions";
 import { ChatPanel } from "@/components/chat/chat-panel";
+import { VoiceChannelView } from "@/components/voice/voice-channel-view";
 import { Hash } from "lucide-react";
 
 export default function ChannelPage({
@@ -22,17 +24,32 @@ export default function ChannelPage({
   const permissions = useServerPermissions(sId);
   const channels = useQuery(api.channels.listChannels, { serverId: sId });
   const channel = channels?.find((c) => c._id === cId);
+  const router = useRouter();
+
+  // If this channel gets deleted (e.g. by an admin) while we're viewing it,
+  // bounce back to the server's default channel instead of crashing on a
+  // "channel not found" query error.
+  const channelMissing = channels !== undefined && !channel;
+  useEffect(() => {
+    if (channelMissing) {
+      router.replace(`/app/servers/${sId}`);
+    }
+  }, [channelMissing, router, sId]);
 
   const { results, status, loadMore } = usePaginatedQuery(
     api.messages.listMessages,
-    { channelId: cId },
+    channelMissing || channel?.type === "voice" ? "skip" : { channelId: cId },
     { initialNumItems: 30 },
   );
   const sendMessage = useMutation(api.messages.sendMessage);
   const editMessage = useMutation(api.messages.editMessage);
   const deleteMessage = useMutation(api.messages.deleteMessage);
 
-  if (!user) return null;
+  if (!user || channelMissing) return null;
+
+  if (channel?.type === "voice") {
+    return <VoiceChannelView serverId={sId} channelId={cId} channelName={channel.name} />;
+  }
 
   return (
     <ChatPanel

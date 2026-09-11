@@ -1,4 +1,4 @@
-import { QueryCtx, MutationCtx } from "./_generated/server";
+import { QueryCtx, MutationCtx, internalMutation } from "./_generated/server";
 import { Doc, Id } from "./_generated/dataModel";
 
 // Permission bitmask flags.
@@ -13,6 +13,7 @@ export const PERMISSIONS = {
   KICK_MEMBERS: 1 << 7,
   BAN_MEMBERS: 1 << 8,
   ADMINISTRATOR: 1 << 9,
+  CONNECT: 1 << 10,
 } as const;
 
 export type PermissionFlag = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
@@ -23,7 +24,30 @@ export const ALL_PERMISSIONS = Object.values(PERMISSIONS).reduce(
 );
 
 export const DEFAULT_ROLE_PERMISSIONS =
-  PERMISSIONS.VIEW_CHANNELS | PERMISSIONS.SEND_MESSAGES | PERMISSIONS.CREATE_INVITE;
+  PERMISSIONS.VIEW_CHANNELS |
+  PERMISSIONS.SEND_MESSAGES |
+  PERMISSIONS.CREATE_INVITE |
+  PERMISSIONS.CONNECT;
+
+/**
+ * `DEFAULT_ROLE_PERMISSIONS` is only read once, when `createServer` inserts
+ * a new server's `@everyone` role — bumping the constant above does nothing
+ * for servers that already exist. Run this once per environment after
+ * deploying a change to it: `npx convex run permissions:backfillConnectPermission`.
+ */
+export const backfillConnectPermission = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const roles = await ctx.db.query("roles").collect();
+    for (const role of roles) {
+      if (role.isDefault && (role.permissions & PERMISSIONS.CONNECT) === 0) {
+        await ctx.db.patch(role._id, {
+          permissions: role.permissions | PERMISSIONS.CONNECT,
+        });
+      }
+    }
+  },
+});
 
 export function hasPermission(bitmask: number, flag: PermissionFlag): boolean {
   return (bitmask & PERMISSIONS.ADMINISTRATOR) !== 0 || (bitmask & flag) !== 0;
@@ -130,4 +154,157 @@ export async function getHighestRolePosition(
     if (role && role.position > highest) highest = role.position;
   }
   return highest;
+}
+
+/**
+ * Layers a channel's permission overrides (Discord-style channel overwrites)
+ * on top of a member's server-wide effective permissions, in the same
+ * precedence order Discord uses: @everyone channel overwrite, then the
+ * union of the member's other role overwrites, then a member-specific
+ * overwrite last (highest precedence). Administrators bypass overwrites
+ * entirely, same as at the server level.
+ */
+export async function getEffectiveChannelPermissions(
+  ctx: QueryCtx | MutationCtx,
+  channelId: Id<"channels">,
+  userId: Id<"users">,
+): Promise<number> {
+  const channel = await ctx.db.get(channelId);
+  if (!channel) return 0;
+
+  const base = await getEffectivePermissions(ctx, channel.serverId, userId);
+  if (base & PERMISSIONS.ADMINISTRATOR) return ALL_PERMISSIONS;
+
+  const overrides = await ctx.db
+    .query("channelPermissionOverrides")
+    .withIndex("by_channel", (q) => q.eq("channelId", channelId))
+    .collect();
+  if (overrides.length === 0) return base;
+
+  const defaultRole = await ctx.db
+    .query("roles")
+    .withIndex("by_server", (q) => q.eq("serverId", channel.serverId))
+    .filter((q) => q.eq(q.field("isDefault"), true))
+    .unique();
+  const myRoleIds = new Set(
+    (
+      await ctx.db
+        .query("memberRoles")
+        .withIndex("by_server_and_user", (q) =>
+          q.eq("serverId", channel.serverId).eq("userId", userId),
+        )
+        .collect()
+    ).map((r) => r.roleId),
+  );
+
+  return applyChannelOverrides(base, overrides, defaultRole?._id, myRoleIds, userId);
+}
+
+/**
+ * Batched variant of `getEffectiveChannelPermissions` for listing every
+ * channel in a server at once: fetches that server's overrides and the
+ * member's roles a single time each, instead of once per channel.
+ */
+export async function getEffectiveChannelPermissionsForServer(
+  ctx: QueryCtx | MutationCtx,
+  serverId: Id<"servers">,
+  userId: Id<"users">,
+  channelIds: Id<"channels">[],
+): Promise<Map<Id<"channels">, number>> {
+  const base = await getEffectivePermissions(ctx, serverId, userId);
+  const result = new Map<Id<"channels">, number>();
+  if (base & PERMISSIONS.ADMINISTRATOR) {
+    for (const channelId of channelIds) result.set(channelId, ALL_PERMISSIONS);
+    return result;
+  }
+
+  const overrides = await ctx.db
+    .query("channelPermissionOverrides")
+    .withIndex("by_server", (q) => q.eq("serverId", serverId))
+    .collect();
+  const overridesByChannel = new Map<Id<"channels">, typeof overrides>();
+  for (const o of overrides) {
+    const list = overridesByChannel.get(o.channelId);
+    if (list) list.push(o);
+    else overridesByChannel.set(o.channelId, [o]);
+  }
+
+  const defaultRole = await ctx.db
+    .query("roles")
+    .withIndex("by_server", (q) => q.eq("serverId", serverId))
+    .filter((q) => q.eq(q.field("isDefault"), true))
+    .unique();
+  const myRoleIds = new Set(
+    (
+      await ctx.db
+        .query("memberRoles")
+        .withIndex("by_server_and_user", (q) =>
+          q.eq("serverId", serverId).eq("userId", userId),
+        )
+        .collect()
+    ).map((r) => r.roleId),
+  );
+
+  for (const channelId of channelIds) {
+    const channelOverrides = overridesByChannel.get(channelId);
+    result.set(
+      channelId,
+      channelOverrides
+        ? applyChannelOverrides(base, channelOverrides, defaultRole?._id, myRoleIds, userId)
+        : base,
+    );
+  }
+  return result;
+}
+
+function applyChannelOverrides(
+  base: number,
+  overrides: Doc<"channelPermissionOverrides">[],
+  defaultRoleId: Id<"roles"> | undefined,
+  myRoleIds: Set<Id<"roles">>,
+  userId: Id<"users">,
+): number {
+  let bitmask = base;
+
+  const everyoneOverride = overrides.find(
+    (o) => o.targetType === "role" && defaultRoleId && o.targetId === defaultRoleId,
+  );
+  if (everyoneOverride) {
+    bitmask = (bitmask & ~everyoneOverride.deny) | everyoneOverride.allow;
+  }
+
+  let roleAllow = 0;
+  let roleDeny = 0;
+  for (const o of overrides) {
+    if (
+      o.targetType === "role" &&
+      o.targetId !== defaultRoleId &&
+      myRoleIds.has(o.targetId as Id<"roles">)
+    ) {
+      roleAllow |= o.allow;
+      roleDeny |= o.deny;
+    }
+  }
+  bitmask = (bitmask & ~roleDeny) | roleAllow;
+
+  const memberOverride = overrides.find(
+    (o) => o.targetType === "member" && o.targetId === userId,
+  );
+  if (memberOverride) {
+    bitmask = (bitmask & ~memberOverride.deny) | memberOverride.allow;
+  }
+
+  return bitmask;
+}
+
+export async function requireChannelPermission(
+  ctx: QueryCtx | MutationCtx,
+  channelId: Id<"channels">,
+  userId: Id<"users">,
+  flag: PermissionFlag,
+): Promise<void> {
+  const bitmask = await getEffectiveChannelPermissions(ctx, channelId, userId);
+  if ((bitmask & flag) === 0) {
+    throw new Error("You do not have permission to perform this action in this channel");
+  }
 }

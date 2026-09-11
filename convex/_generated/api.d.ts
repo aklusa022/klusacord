@@ -9,6 +9,7 @@
  */
 
 import type * as categories from "../categories.js";
+import type * as channelPermissions from "../channelPermissions.js";
 import type * as channels from "../channels.js";
 import type * as dms from "../dms.js";
 import type * as friends from "../friends.js";
@@ -19,6 +20,7 @@ import type * as permissions from "../permissions.js";
 import type * as roles from "../roles.js";
 import type * as servers from "../servers.js";
 import type * as users from "../users.js";
+import type * as voiceChannels from "../voiceChannels.js";
 
 import type {
   ApiFromModules,
@@ -28,6 +30,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   categories: typeof categories;
+  channelPermissions: typeof channelPermissions;
   channels: typeof channels;
   dms: typeof dms;
   friends: typeof friends;
@@ -38,6 +41,7 @@ declare const fullApi: ApiFromModules<{
   roles: typeof roles;
   servers: typeof servers;
   users: typeof users;
+  voiceChannels: typeof voiceChannels;
 }>;
 
 /**

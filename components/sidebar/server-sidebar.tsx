@@ -14,16 +14,18 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ServerSettingsDialog } from "@/components/server-settings/server-settings-dialog";
+import { UserAvatar } from "@/components/user-avatar";
 import { useServerPermissions } from "@/hooks/use-server-permissions";
 import { PERMISSIONS } from "@/convex/permissions";
 import { cn } from "@/lib/utils";
-import { ChevronDown, Hash, Settings, UserPlus } from "lucide-react";
+import { ChevronDown, Hash, Settings, UserPlus, Volume2 } from "lucide-react";
 import { useState } from "react";
 
 export function ServerSidebar({ serverId }: { serverId: Id<"servers"> }) {
   const server = useQuery(api.servers.getServer, { serverId });
   const categories = useQuery(api.categories.listCategories, { serverId });
   const channels = useQuery(api.channels.listChannels, { serverId });
+  const voiceParticipants = useQuery(api.voiceChannels.listVoiceParticipants, { serverId });
   const permissions = useServerPermissions(serverId);
   const leaveServer = useMutation(api.servers.leaveServer);
   const deleteServer = useMutation(api.servers.deleteServer);
@@ -101,6 +103,7 @@ export function ServerSidebar({ serverId }: { serverId: Id<"servers"> }) {
                     serverId={serverId}
                     channel={channel}
                     active={pathname === `/app/servers/${serverId}/channels/${channel._id}`}
+                    participants={voiceParticipants?.filter((p) => p.channelId === channel._id) ?? []}
                   />
                 ))}
             </div>
@@ -121,6 +124,7 @@ export function ServerSidebar({ serverId }: { serverId: Id<"servers"> }) {
                         key={channel._id}
                         serverId={serverId}
                         channel={channel}
+                        participants={voiceParticipants?.filter((p) => p.channelId === channel._id) ?? []}
                         active={pathname === `/app/servers/${serverId}/channels/${channel._id}`}
                       />
                     ))}
@@ -152,21 +156,41 @@ function ChannelLink({
   serverId,
   channel,
   active,
+  participants,
 }: {
   serverId: Id<"servers">;
-  channel: { _id: Id<"channels">; name: string };
+  channel: { _id: Id<"channels">; name: string; type: "text" | "voice" };
   active: boolean;
+  participants: { userId: Id<"users">; user: { displayName: string; imageUrl: string } | null }[];
 }) {
   return (
-    <Link
-      href={`/app/servers/${serverId}/channels/${channel._id}`}
-      className={cn(
-        "flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-        active && "bg-accent text-accent-foreground",
+    <div className="flex flex-col gap-1">
+      <Link
+        href={`/app/servers/${serverId}/channels/${channel._id}`}
+        className={cn(
+          "flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+          active && "bg-accent text-accent-foreground",
+        )}
+      >
+        {channel.type === "voice" ? (
+          <Volume2 className="h-4 w-4 shrink-0" />
+        ) : (
+          <Hash className="h-4 w-4 shrink-0" />
+        )}
+        <span className="truncate">{channel.name}</span>
+      </Link>
+      {channel.type === "voice" && participants.length > 0 && (
+        <div className="flex flex-wrap gap-1 pl-6">
+          {participants.map((p) => (
+            <UserAvatar
+              key={p.userId}
+              name={p.user?.displayName ?? "?"}
+              imageUrl={p.user?.imageUrl}
+              className="h-5 w-5"
+            />
+          ))}
+        </div>
       )}
-    >
-      <Hash className="h-4 w-4 shrink-0" />
-      <span className="truncate">{channel.name}</span>
-    </Link>
+    </div>
   );
 }

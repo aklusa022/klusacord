@@ -10,6 +10,7 @@ const compat = new FlatCompat({
 });
 
 const eslintConfig = [
+  { ignores: ["dist/**", ".wrangler/**", "worker-configuration.d.ts"] },
   ...compat.extends("next/core-web-vitals", "next/typescript"),
 ];
 

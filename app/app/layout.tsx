@@ -4,6 +4,8 @@ import { ReactNode, useEffect } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { ServerRail } from "@/components/server-rail";
+import { VoiceCallProvider } from "@/hooks/use-voice-call";
+import { ActiveCallBar } from "@/components/voice/active-call-bar";
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   const ensureUser = useMutation(api.users.ensureCurrentUser);
@@ -28,9 +30,14 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-background">
-      <ServerRail />
-      <div className="flex min-w-0 flex-1">{children}</div>
-    </div>
+    <VoiceCallProvider>
+      <div className="flex h-screen w-screen flex-col overflow-hidden bg-background">
+        <div className="flex min-h-0 flex-1">
+          <ServerRail />
+          <div className="flex min-w-0 flex-1">{children}</div>
+        </div>
+        <ActiveCallBar />
+      </div>
+    </VoiceCallProvider>
   );
 }

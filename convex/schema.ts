@@ -87,10 +87,58 @@ export default defineSchema({
     categoryId: v.optional(v.id("categories")),
     name: v.string(),
     position: v.number(),
-    type: v.literal("text"),
+    type: v.union(v.literal("text"), v.literal("voice")),
   })
     .index("by_server", ["serverId"])
     .index("by_category", ["categoryId"]),
+
+  // One row per RealtimeKit meeting "session" for a voice channel, created
+  // lazily on first join. Kept separate from `channels` (which stays purely
+  // structural) so past sessions leave an audit trail instead of a single
+  // field being overwritten forever.
+  voiceChannelSessions: defineTable({
+    channelId: v.id("channels"),
+    serverId: v.id("servers"),
+    rtkMeetingId: v.string(),
+    status: v.union(v.literal("active"), v.literal("ended")),
+    startedAt: v.number(),
+    endedAt: v.optional(v.number()),
+  })
+    .index("by_channel_and_status", ["channelId", "status"])
+    .index("by_rtkMeetingId", ["rtkMeetingId"]),
+
+  // High-churn presence table, deliberately separate from `serverMembers`.
+  // One row per user currently connected to a voice channel anywhere (a
+  // user can only be in one call at a time).
+  voiceParticipants: defineTable({
+    channelId: v.id("channels"),
+    serverId: v.id("servers"),
+    userId: v.id("users"),
+    rtkMeetingId: v.string(),
+    rtkParticipantId: v.optional(v.string()),
+    joinedAt: v.number(),
+    lastSeenAt: v.number(),
+  })
+    .index("by_channel", ["channelId"])
+    .index("by_server", ["serverId"])
+    .index("by_user", ["userId"])
+    .index("by_rtkMeetingId_and_userId", ["rtkMeetingId", "userId"]),
+
+  // Per-channel permission overrides (Discord-style channel overwrites),
+  // layered on top of the server-wide role bitmask from
+  // `getEffectivePermissions`. Small per channel, so it's fetched wholesale
+  // (by channel or by server) rather than point-queried per permission check.
+  channelPermissionOverrides: defineTable({
+    channelId: v.id("channels"),
+    serverId: v.id("servers"),
+    targetType: v.union(v.literal("role"), v.literal("member")),
+    targetId: v.union(v.id("roles"), v.id("users")),
+    allow: v.number(),
+    deny: v.number(),
+  })
+    .index("by_channel", ["channelId"])
+    .index("by_server", ["serverId"])
+    .index("by_channel_and_target", ["channelId", "targetType", "targetId"]),
 
   messages: defineTable({
     channelId: v.id("channels"),

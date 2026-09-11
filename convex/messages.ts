@@ -7,7 +7,7 @@ import {
   hasPermission,
   getEffectivePermissions,
   requireMembership,
-  requirePermission,
+  requireChannelPermission,
 } from "./permissions";
 
 export const listMessages = query({
@@ -19,9 +19,9 @@ export const listMessages = query({
     const me = await getCurrentUserOrThrow(ctx);
     const channel = await ctx.db.get(args.channelId);
     if (!channel) throw new Error("Channel not found");
-    await requirePermission(
+    await requireChannelPermission(
       ctx,
-      channel.serverId,
+      args.channelId,
       me._id,
       PERMISSIONS.VIEW_CHANNELS,
     );
@@ -46,9 +46,9 @@ export const sendMessage = mutation({
     const me = await getOrCreateCurrentUser(ctx);
     const channel = await ctx.db.get(args.channelId);
     if (!channel) throw new Error("Channel not found");
-    await requirePermission(
+    await requireChannelPermission(
       ctx,
-      channel.serverId,
+      args.channelId,
       me._id,
       PERMISSIONS.SEND_MESSAGES,
     );

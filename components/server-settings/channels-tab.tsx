@@ -11,7 +11,7 @@ import { useServerPermissions } from "@/hooks/use-server-permissions";
 import { PERMISSIONS } from "@/convex/permissions";
 import { CreateCategoryDialog } from "@/components/create-category-dialog";
 import { CreateChannelDialog } from "@/components/create-channel-dialog";
-import { FolderOpen, Hash, Trash2 } from "lucide-react";
+import { FolderOpen, Hash, Trash2, Volume2 } from "lucide-react";
 
 export function ChannelsTab({ serverId }: { serverId: Id<"servers"> }) {
   const categories = useQuery(api.categories.listCategories, { serverId });
@@ -77,6 +77,7 @@ export function ChannelsTab({ serverId }: { serverId: Id<"servers"> }) {
               <ChannelRow
                 key={channel._id}
                 name={channel.name}
+                type={channel.type}
                 disabled={pending === channel._id}
                 canManage={canManage}
                 onDelete={() => handleDeleteChannel(channel._id, channel.name)}
@@ -94,7 +95,7 @@ export function ChannelsTab({ serverId }: { serverId: Id<"servers"> }) {
               </p>
               {canManage && (
                 <div className="flex items-center gap-1">
-                  <CreateChannelDialog serverId={serverId} categoryId={category._id} />
+                  <CreateChannelDialog serverId={serverId} categoryId={category._id} compact />
                   <Button
                     size="icon"
                     variant="ghost"
@@ -114,6 +115,7 @@ export function ChannelsTab({ serverId }: { serverId: Id<"servers"> }) {
                 <ChannelRow
                   key={channel._id}
                   name={channel.name}
+                  type={channel.type}
                   disabled={pending === channel._id}
                   canManage={canManage}
                   onDelete={() => handleDeleteChannel(channel._id, channel.name)}
@@ -134,11 +136,13 @@ export function ChannelsTab({ serverId }: { serverId: Id<"servers"> }) {
 
 function ChannelRow({
   name,
+  type,
   canManage,
   disabled,
   onDelete,
 }: {
   name: string;
+  type: "text" | "voice";
   canManage: boolean;
   disabled: boolean;
   onDelete: () => void;
@@ -146,7 +150,11 @@ function ChannelRow({
   return (
     <div className="flex items-center justify-between rounded-md px-2 py-1.5 hover:bg-accent/50">
       <span className="flex min-w-0 items-center gap-1.5 text-sm">
-        <Hash className="h-4 w-4 shrink-0 text-muted-foreground" />
+        {type === "voice" ? (
+          <Volume2 className="h-4 w-4 shrink-0 text-muted-foreground" />
+        ) : (
+          <Hash className="h-4 w-4 shrink-0 text-muted-foreground" />
+        )}
         <span className="truncate">{name}</span>
       </span>
       {canManage && (
