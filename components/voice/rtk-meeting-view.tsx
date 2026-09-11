@@ -8,6 +8,7 @@ import {
   RtkParticipantsAudio,
   RtkDialogManager,
   RtkNotifications,
+  createDefaultConfig,
 } from "@cloudflare/realtimekit-react-ui";
 import type Meeting from "@cloudflare/realtimekit";
 
@@ -57,7 +58,7 @@ export function RtkMeetingView({ meeting }: { meeting: Meeting }) {
     <RealtimeKitProvider value={meeting}>
       <RtkUiProvider
         meeting={meeting}
-        config={{ designTokens: RTK_DESIGN_TOKENS }}
+        config={{ ...createDefaultConfig(), designTokens: RTK_DESIGN_TOKENS }}
         style={{ display: "flex", flexDirection: "column", height: "100%" }}
       >
         <RtkGrid aspectRatio="1:1" style={{ flex: 1, minHeight: 0 }} />
