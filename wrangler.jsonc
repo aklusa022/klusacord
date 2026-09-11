@@ -5,6 +5,7 @@
   "compatibility_flags": [
     "nodejs_compat"
   ],
+  // Entry point + static assets produced by `npm run build:vinext`.
   "main": "vinext/server/fetch-handler",
   "assets": {
     "directory": "dist/client",
@@ -23,18 +24,38 @@
       "id": "2933b7a57e374d789955dfcff54572a9"
     }
   ],
+  // The production custom domain this Worker serves.
   "routes": [
     {
       "pattern": "klusacord.zenfora.io",
       "custom_domain": true
     }
   ],
+  // Runtime environment variables for the deployed Worker (server-side code
+  // only — NEXT_PUBLIC_* vars are also inlined into the client bundle
+  // separately at build time from `.env.local`, see `.env.example`).
+  //
+  // Everything below is safe to commit: a Clerk *publishable* key, and
+  // plain URLs/identifiers, none of which are secrets. The one real secret
+  // this Worker needs — CLERK_SECRET_KEY — is deliberately NOT here. It's
+  // stored in Cloudflare's own encrypted secret store instead:
+  //   npx wrangler secret put CLERK_SECRET_KEY
+  //
+  // Cloudflare RealtimeKit credentials (CLOUDFLARE_API_TOKEN, etc.) and the
+  // Clerk webhook secret live on the Convex deployment, not here — see the
+  // bottom of `.env.example` for those.
   "vars": {
+    // Which Convex deployment this Worker talks to.
     "CONVEX_DEPLOYMENT": "dev:rugged-woodpecker-242",
     "NEXT_PUBLIC_CONVEX_URL": "https://rugged-woodpecker-242.convex.cloud",
     "NEXT_PUBLIC_CONVEX_SITE_URL": "https://rugged-woodpecker-242.convex.site",
+
+    // This Worker's own public origin.
     "NEXT_PUBLIC_SITE_URL": "https://klusacord.zenfora.io",
     "BASE_URL": "https://klusacord.zenfora.io",
+
+    // Clerk instance config — publishable key + issuer URLs are meant to be
+    // public (this is not the secret key).
     "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_test_Zm9uZC1tYWtvLTk5NC5jbGVyay5hY2NvdW50cy5kZXYk",
     "CLERK_FRONTEND_API_URL": "https://fond-mako-994.clerk.accounts.dev",
     "CLERK_JWT_ISSUER_DOMAIN": "https://fond-mako-994.clerk.accounts.dev"
