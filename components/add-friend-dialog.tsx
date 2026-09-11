@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useMutation } from "convex/react";
 import { toast } from "sonner";
 import { api } from "@/convex/_generated/api";
-import { Dialog, Input, Label } from "@cloudflare/kumo";
+import { Dialog, Input } from "@cloudflare/kumo";
 import { Button } from "@/components/ui/button";
 import { UserPlusIcon } from "@phosphor-icons/react";
 
@@ -49,16 +49,14 @@ export function AddFriendDialog() {
         <Dialog.Description className="mb-4 text-sm text-kumo-subtle">
           You can add a friend by their exact username.
         </Dialog.Description>
-        <div className="space-y-2">
-          <Label htmlFor="username">Username</Label>
-          <Input
-            id="username"
-            placeholder="e.g. alexk"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-          />
-        </div>
+        <Input
+          label="Username"
+          id="username"
+          placeholder="e.g. alexk"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+        />
         <div className="mt-6 flex justify-end">
           <Button disabled={!username.trim() || submitting} onClick={handleSubmit}>
             Send friend request

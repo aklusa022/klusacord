@@ -5,7 +5,7 @@ import { useMutation, useQuery } from "convex/react";
 import { toast } from "sonner";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { Input, Label } from "@cloudflare/kumo";
+import { Input } from "@cloudflare/kumo";
 import { Button } from "@/components/ui/button";
 import { useServerPermissions } from "@/hooks/use-server-permissions";
 import { PERMISSIONS } from "@/convex/permissions";
@@ -33,15 +33,13 @@ export function OverviewTab({ serverId }: { serverId: Id<"servers"> }) {
 
   return (
     <div className="space-y-4 p-1">
-      <div className="space-y-2">
-        <Label htmlFor="overview-name">Server name</Label>
-        <Input
-          id="overview-name"
-          value={name}
-          disabled={!canManage}
-          onChange={(e) => setName(e.target.value)}
-        />
-      </div>
+      <Input
+        label="Server name"
+        id="overview-name"
+        value={name}
+        disabled={!canManage}
+        onChange={(e) => setName(e.target.value)}
+      />
       {canManage && (
         <Button
           disabled={!name.trim() || name === server?.name}

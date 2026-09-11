@@ -5,7 +5,7 @@ import { useMutation } from "convex/react";
 import { toast } from "sonner";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { Dialog, Input, Label } from "@cloudflare/kumo";
+import { Dialog, Input } from "@cloudflare/kumo";
 import { Button } from "@/components/ui/button";
 import { FolderPlusIcon } from "@phosphor-icons/react";
 
@@ -38,16 +38,14 @@ export function CreateCategoryDialog({ serverId }: { serverId: Id<"servers"> }) 
       </Dialog.Trigger>
       <Dialog size="sm" className="p-6">
         <Dialog.Title className="mb-4 text-lg font-semibold">Create category</Dialog.Title>
-        <div className="space-y-2">
-          <Label htmlFor="category-name">Category name</Label>
-          <Input
-            id="category-name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-            placeholder="NEW CATEGORY"
-          />
-        </div>
+        <Input
+          label="Category name"
+          id="category-name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+          placeholder="NEW CATEGORY"
+        />
         <div className="mt-6 flex justify-end">
           <Button disabled={!name.trim() || submitting} onClick={handleSubmit}>
             Create

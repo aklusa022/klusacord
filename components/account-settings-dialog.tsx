@@ -6,7 +6,7 @@ import { useClerk } from "@clerk/nextjs";
 import { toast } from "sonner";
 import { api } from "@/convex/_generated/api";
 import { Doc } from "@/convex/_generated/dataModel";
-import { Dialog, Input, Label } from "@cloudflare/kumo";
+import { Dialog, Input } from "@cloudflare/kumo";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { UserAvatar } from "@/components/user-avatar";
@@ -75,27 +75,21 @@ export function AccountSettingsDialog({
         </div>
 
         <div className="space-y-3">
-          <div className="space-y-2">
-            <Label htmlFor="account-display-name">Display name</Label>
-            <Input
-              id="account-display-name"
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              maxLength={32}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="account-username">Username</Label>
-            <Input
-              id="account-username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              maxLength={32}
-            />
-            <p className="text-xs text-muted-foreground">
-              Friends add you by this exact username.
-            </p>
-          </div>
+          <Input
+            label="Display name"
+            id="account-display-name"
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+            maxLength={32}
+          />
+          <Input
+            label="Username"
+            id="account-username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            maxLength={32}
+            description="Friends add you by this exact username."
+          />
           <Button disabled={!dirty || saving} onClick={handleSave} className="w-full">
             Save changes
           </Button>

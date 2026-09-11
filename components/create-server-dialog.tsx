@@ -5,7 +5,7 @@ import { useMutation } from "convex/react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { api } from "@/convex/_generated/api";
-import { Dialog, Input, Label, Tabs } from "@cloudflare/kumo";
+import { Dialog, Input, Tabs } from "@cloudflare/kumo";
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "@phosphor-icons/react";
 
@@ -81,16 +81,14 @@ export function CreateServerDialog() {
         />
         {tab === "create" ? (
           <div className="space-y-4 pt-4">
-            <div className="space-y-2">
-              <Label htmlFor="server-name">Server name</Label>
-              <Input
-                id="server-name"
-                placeholder="My Awesome Server"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleCreate()}
-              />
-            </div>
+            <Input
+              label="Server name"
+              id="server-name"
+              placeholder="My Awesome Server"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleCreate()}
+            />
             <div className="flex justify-end">
               <Button disabled={!name.trim() || submitting} onClick={handleCreate}>
                 Create server
@@ -99,16 +97,14 @@ export function CreateServerDialog() {
           </div>
         ) : (
           <div className="space-y-4 pt-4">
-            <div className="space-y-2">
-              <Label htmlFor="invite-code">Invite code</Label>
-              <Input
-                id="invite-code"
-                placeholder="e.g. aB3xY9zQ"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleJoin()}
-              />
-            </div>
+            <Input
+              label="Invite code"
+              id="invite-code"
+              placeholder="e.g. aB3xY9zQ"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleJoin()}
+            />
             <div className="flex justify-end">
               <Button disabled={!code.trim() || submitting} onClick={handleJoin}>
                 Join server

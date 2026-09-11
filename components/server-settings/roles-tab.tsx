@@ -7,7 +7,7 @@ import { api } from "@/convex/_generated/api";
 import { Id, Doc } from "@/convex/_generated/dataModel";
 import { PERMISSIONS } from "@/convex/permissions";
 import { Button } from "@/components/ui/button";
-import { Input, Label, Checkbox } from "@cloudflare/kumo";
+import { Field, Input, Checkbox } from "@cloudflare/kumo";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { PlusIcon, TrashIcon } from "@phosphor-icons/react";
@@ -183,8 +183,7 @@ function RoleEditor({
   return (
     <ScrollArea className="h-full">
       <div className="space-y-4 pr-4">
-        <div className="space-y-2">
-          <Label htmlFor="role-name">Role name</Label>
+        <Field label="Role name">
           <div className="flex gap-2">
             <Input
               id="role-name"
@@ -193,6 +192,7 @@ function RoleEditor({
               onChange={(e) => setName(e.target.value)}
               onBlur={saveName}
               onKeyDown={(e) => e.key === "Enter" && saveName()}
+              aria-label="Role name"
             />
             {!role.isDefault && (
               <Button size="icon" variant="outline" onClick={handleDelete} aria-label={`Delete ${role.name} role`}>
@@ -200,7 +200,7 @@ function RoleEditor({
               </Button>
             )}
           </div>
-        </div>
+        </Field>
         <div className="space-y-3">
           <span className="text-xs font-semibold uppercase text-muted-foreground">
             Permissions

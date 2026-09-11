@@ -69,7 +69,7 @@ export function CreateChannelDialog({
         <Dialog.Title className="mb-4 text-lg font-semibold">
           Create {type === "voice" ? "voice" : "text"} channel
         </Dialog.Title>
-        <div className="space-y-2">
+        <div className="flex flex-col gap-2">
           <Label>Channel type</Label>
           <div className="flex gap-2">
             <button
@@ -94,9 +94,9 @@ export function CreateChannelDialog({
             </button>
           </div>
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="channel-name">Channel name</Label>
+        <div className="mt-4">
           <Input
+            label="Channel name"
             id="channel-name"
             value={name}
             onChange={(e) => setName(e.target.value)}
