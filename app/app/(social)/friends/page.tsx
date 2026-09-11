@@ -9,7 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { UserAvatar } from "@/components/user-avatar";
 import { AddFriendDialog } from "@/components/add-friend-dialog";
 import { useRouter } from "next/navigation";
-import { Check, MessageSquare, X } from "lucide-react";
+import { CheckIcon, ChatIcon, XIcon } from "@phosphor-icons/react";
 
 export default function FriendsPage() {
   const friends = useQuery(api.friends.listFriends);
@@ -49,15 +49,17 @@ export default function FriendsPage() {
                       size="icon"
                       variant="secondary"
                       onClick={() => respond({ requestId: r._id, accept: true })}
+                      aria-label={`Accept friend request from ${r.fromUser.displayName}`}
                     >
-                      <Check className="h-4 w-4" />
+                      <CheckIcon className="h-4 w-4" />
                     </Button>
                     <Button
                       size="icon"
                       variant="secondary"
                       onClick={() => respond({ requestId: r._id, accept: false })}
+                      aria-label={`Decline friend request from ${r.fromUser.displayName}`}
                     >
-                      <X className="h-4 w-4" />
+                      <XIcon className="h-4 w-4" />
                     </Button>
                   </Row>
                 ) : null,
@@ -91,8 +93,8 @@ export default function FriendsPage() {
             )}
             {friends?.map((f) => (
               <Row key={f._id} name={f.displayName} imageUrl={f.imageUrl}>
-                <Button size="icon" variant="ghost" onClick={() => openDm(f._id)}>
-                  <MessageSquare className="h-4 w-4" />
+                <Button size="icon" variant="ghost" onClick={() => openDm(f._id)} aria-label={`Message ${f.displayName}`}>
+                  <ChatIcon className="h-4 w-4" />
                 </Button>
                 <Button
                   size="sm"

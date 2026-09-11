@@ -1,6 +1,6 @@
 "use client"
 
-import { Separator as SeparatorPrimitive } from "@base-ui/react/separator"
+import { Separator as SeparatorPrimitive } from "@cloudflare/kumo/primitives/separator"
 
 import { cn } from "@/lib/utils"
 

@@ -1,5 +1,5 @@
 import { httpRouter } from "convex/server";
-import { httpAction } from "./_generated/server";
+import { httpAction, ActionCtx } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { Id } from "./_generated/dataModel";
 import { Webhook } from "svix";
@@ -61,7 +61,7 @@ http.route({
   path: "/realtimekit-webhook",
   method: "POST",
   handler: httpAction(async (ctx, request) => {
-    const event = await verifyRealtimeKitWebhook(request);
+    const event = await verifyRealtimeKitWebhook(ctx, request);
     if (!event) {
       return new Response("Invalid webhook signature", { status: 400 });
     }
@@ -106,21 +106,30 @@ http.route({
  * (base64 RSA-SHA256 over the *raw* request body — never re-serialize the
  * parsed JSON, whitespace differences invalidate the signature). The
  * well-known endpoint returns `{ data: { publicKey: "<PEM SPKI string>" } }`
- * (confirmed live, not JWK as originally assumed).
+ * (confirmed live, not JWK as originally assumed). The public key is cached
+ * in `webhookKeyCache` (see convex/webhookKeys.ts) so most deliveries verify
+ * against a fast internal query instead of an external HTTPS round trip.
  */
-async function verifyRealtimeKitWebhook(request: Request): Promise<RealtimeKitEvent | null> {
+async function verifyRealtimeKitWebhook(
+  ctx: ActionCtx,
+  request: Request,
+): Promise<RealtimeKitEvent | null> {
   const signature = request.headers.get("rtk-signature");
   if (!signature) return null;
 
   const rawBody = await request.text();
 
   try {
-    const keysRes = await fetch("https://api.realtime.cloudflare.com/.well-known/webhooks.json");
-    const keysJson = (await keysRes.json()) as { data?: { publicKey?: string } };
-    const pem = keysJson.data?.publicKey;
+    let pem = await ctx.runQuery(internal.webhookKeys.getCachedRealtimeKitKey, {});
     if (!pem) {
-      console.error("No RealtimeKit webhook public key found");
-      return null;
+      const keysRes = await fetch("https://api.realtime.cloudflare.com/.well-known/webhooks.json");
+      const keysJson = (await keysRes.json()) as { data?: { publicKey?: string } };
+      pem = keysJson.data?.publicKey ?? null;
+      if (!pem) {
+        console.error("No RealtimeKit webhook public key found");
+        return null;
+      }
+      await ctx.runMutation(internal.webhookKeys.setCachedRealtimeKitKey, { publicKeyPem: pem });
     }
 
     const publicKey = await crypto.subtle.importKey(

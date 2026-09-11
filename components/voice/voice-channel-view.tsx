@@ -5,10 +5,29 @@ import { toast } from "sonner";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { useVoiceCall } from "@/hooks/use-voice-call";
+import { useCurrentUser } from "@/hooks/use-current-user";
 import { Button } from "@/components/ui/button";
 import { UserAvatar } from "@/components/user-avatar";
 import { RtkMeetingView } from "@/components/voice/rtk-meeting-view";
-import { Volume2 } from "lucide-react";
+import { SpeakerHighIcon } from "@phosphor-icons/react";
+
+type RosterEntry = {
+  userId: Id<"users">;
+  user: { displayName: string; imageUrl: string } | null;
+};
+
+function RosterList({ roster }: { roster: RosterEntry[] }) {
+  return (
+    <div className="flex flex-col gap-1">
+      {roster.map((p) => (
+        <div key={p.userId} className="flex items-center gap-2 rounded-md bg-accent/40 px-2 py-1.5">
+          <UserAvatar name={p.user?.displayName ?? "?"} imageUrl={p.user?.imageUrl} />
+          <span className="truncate text-sm">{p.user?.displayName ?? "Unknown"}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export function VoiceChannelView({
   serverId,
@@ -20,11 +39,34 @@ export function VoiceChannelView({
   channelName: string;
 }) {
   const { meeting, status, activeChannelId, join } = useVoiceCall();
+  const { user: me } = useCurrentUser();
   const participants = useQuery(api.voiceChannels.listVoiceParticipants, { serverId });
   const roster = participants?.filter((p) => p.channelId === channelId) ?? [];
 
   if (activeChannelId === channelId && status === "connected" && meeting) {
     return <RtkMeetingView meeting={meeting} />;
+  }
+
+  if (activeChannelId === channelId && status === "connecting") {
+    const alreadyListed = me ? roster.some((p) => p.userId === me._id) : true;
+    const joiningRoster: RosterEntry[] =
+      me && !alreadyListed
+        ? [...roster, { userId: me._id, user: { displayName: me.displayName, imageUrl: me.imageUrl } }]
+        : roster;
+    return (
+      <div className="flex h-full flex-col items-center justify-center gap-4 p-6">
+        <div className="flex flex-col items-center gap-2">
+          <SpeakerHighIcon className="h-10 w-10 text-muted-foreground" />
+          <p className="text-lg font-semibold">{channelName}</p>
+          <p className="text-xs text-muted-foreground">Joining…</p>
+        </div>
+        {joiningRoster.length > 0 && (
+          <div className="flex w-full max-w-64 flex-col items-stretch gap-2">
+            <RosterList roster={joiningRoster} />
+          </div>
+        )}
+      </div>
+    );
   }
 
   const inAnotherCall = status !== "idle" && activeChannelId !== channelId;
@@ -40,23 +82,14 @@ export function VoiceChannelView({
   return (
     <div className="flex h-full flex-col items-center justify-center gap-4 p-6">
       <div className="flex flex-col items-center gap-2">
-        <Volume2 className="h-10 w-10 text-muted-foreground" />
+        <SpeakerHighIcon className="h-10 w-10 text-muted-foreground" />
         <p className="text-lg font-semibold">{channelName}</p>
       </div>
 
       {roster.length > 0 && (
-        <div className="flex flex-col items-center gap-2">
-          <p className="text-xs text-muted-foreground">In this call</p>
-          <div className="flex flex-wrap justify-center gap-2">
-            {roster.map((p) => (
-              <div key={p.userId} className="flex flex-col items-center gap-1">
-                <UserAvatar name={p.user?.displayName ?? "?"} imageUrl={p.user?.imageUrl} />
-                <span className="max-w-16 truncate text-xs text-muted-foreground">
-                  {p.user?.displayName}
-                </span>
-              </div>
-            ))}
-          </div>
+        <div className="flex w-full max-w-64 flex-col items-stretch gap-2">
+          <p className="text-center text-xs text-muted-foreground">In this call</p>
+          <RosterList roster={roster} />
         </div>
       )}
 

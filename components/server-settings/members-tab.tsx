@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { UserAvatar } from "@/components/user-avatar";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@cloudflare/kumo";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -16,7 +16,7 @@ import {
 import { useServerPermissions } from "@/hooks/use-server-permissions";
 import { PERMISSIONS } from "@/convex/permissions";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ChevronDown } from "lucide-react";
+import { CaretDownIcon } from "@phosphor-icons/react";
 
 export function MembersTab({ serverId }: { serverId: Id<"servers"> }) {
   const members = useQuery(api.servers.listMembers, { serverId });
@@ -76,7 +76,7 @@ export function MembersTab({ serverId }: { serverId: Id<"servers"> }) {
                 {canManageRoles && assignableRoles.length > 0 && (
                   <DropdownMenu>
                     <DropdownMenuTrigger render={<Button size="sm" variant="outline" />}>
-                      Roles <ChevronDown className="h-3.5 w-3.5" />
+                      Roles <CaretDownIcon className="h-3.5 w-3.5" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       {assignableRoles.map((role) => {

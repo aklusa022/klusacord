@@ -6,18 +6,9 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Dialog, Input, Label } from "@cloudflare/kumo";
 import { Button } from "@/components/ui/button";
-import { MessageSquarePlus, Hash, Volume2 } from "lucide-react";
+import { ChatCircleDotsIcon, HashIcon, SpeakerHighIcon } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 
 export function CreateChannelDialog({
@@ -60,24 +51,24 @@ export function CreateChannelDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog.Root open={open} onOpenChange={setOpen}>
       {compact ? (
-        <DialogTrigger
-          render={<Button size="icon" variant="ghost" className="h-6 w-6" />}
+        <Dialog.Trigger
+          render={<Button size="icon" variant="ghost" className="h-6 w-6" aria-label="New channel" />}
           aria-label="New channel"
         >
-          <MessageSquarePlus className="h-3.5 w-3.5" />
-        </DialogTrigger>
+          <ChatCircleDotsIcon className="h-3.5 w-3.5" />
+        </Dialog.Trigger>
       ) : (
-        <DialogTrigger render={<Button size="sm" variant="secondary" className="gap-1.5" />}>
-          <MessageSquarePlus className="h-4 w-4" />
+        <Dialog.Trigger render={<Button size="sm" variant="secondary" className="gap-1.5" />}>
+          <ChatCircleDotsIcon className="h-4 w-4" />
           New Channel
-        </DialogTrigger>
+        </Dialog.Trigger>
       )}
-      <DialogContent className="sm:max-w-sm">
-        <DialogHeader>
-          <DialogTitle>Create {type === "voice" ? "voice" : "text"} channel</DialogTitle>
-        </DialogHeader>
+      <Dialog size="sm" className="p-6">
+        <Dialog.Title className="mb-4 text-lg font-semibold">
+          Create {type === "voice" ? "voice" : "text"} channel
+        </Dialog.Title>
         <div className="space-y-2">
           <Label>Channel type</Label>
           <div className="flex gap-2">
@@ -89,7 +80,7 @@ export function CreateChannelDialog({
                 type === "text" ? "border-primary bg-accent" : "border-border",
               )}
             >
-              <Hash className="h-4 w-4" /> Text
+              <HashIcon className="h-4 w-4" /> Text
             </button>
             <button
               type="button"
@@ -99,7 +90,7 @@ export function CreateChannelDialog({
                 type === "voice" ? "border-primary bg-accent" : "border-border",
               )}
             >
-              <Volume2 className="h-4 w-4" /> Voice
+              <SpeakerHighIcon className="h-4 w-4" /> Voice
             </button>
           </div>
         </div>
@@ -113,12 +104,12 @@ export function CreateChannelDialog({
             placeholder={type === "voice" ? "General Voice" : "new-channel"}
           />
         </div>
-        <DialogFooter>
+        <div className="mt-6 flex justify-end">
           <Button disabled={!name.trim() || submitting} onClick={handleSubmit}>
             Create channel
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </div>
+      </Dialog>
+    </Dialog.Root>
   );
 }

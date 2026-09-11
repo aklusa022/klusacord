@@ -11,7 +11,7 @@ import { useServerPermissions } from "@/hooks/use-server-permissions";
 import { PERMISSIONS } from "@/convex/permissions";
 import { CreateCategoryDialog } from "@/components/create-category-dialog";
 import { CreateChannelDialog } from "@/components/create-channel-dialog";
-import { FolderOpen, Hash, Trash2, Volume2 } from "lucide-react";
+import { FolderOpenIcon, HashIcon, TrashIcon, SpeakerHighIcon } from "@phosphor-icons/react";
 
 export function ChannelsTab({ serverId }: { serverId: Id<"servers"> }) {
   const categories = useQuery(api.categories.listCategories, { serverId });
@@ -90,7 +90,7 @@ export function ChannelsTab({ serverId }: { serverId: Id<"servers"> }) {
           <div key={category._id} className="space-y-1">
             <div className="flex items-center justify-between gap-2">
               <p className="flex items-center gap-1.5 text-xs font-semibold uppercase text-muted-foreground">
-                <FolderOpen className="h-3.5 w-3.5" />
+                <FolderOpenIcon className="h-3.5 w-3.5" />
                 {category.name}
               </p>
               {canManage && (
@@ -102,8 +102,9 @@ export function ChannelsTab({ serverId }: { serverId: Id<"servers"> }) {
                     className="h-6 w-6 text-destructive hover:text-destructive"
                     disabled={pending === category._id}
                     onClick={() => handleDeleteCategory(category._id, category.name)}
+                    aria-label={`Delete ${category.name} category`}
                   >
-                    <Trash2 className="h-3.5 w-3.5" />
+                    <TrashIcon className="h-3.5 w-3.5" />
                   </Button>
                 </div>
               )}
@@ -151,9 +152,9 @@ function ChannelRow({
     <div className="flex items-center justify-between rounded-md px-2 py-1.5 hover:bg-accent/50">
       <span className="flex min-w-0 items-center gap-1.5 text-sm">
         {type === "voice" ? (
-          <Volume2 className="h-4 w-4 shrink-0 text-muted-foreground" />
+          <SpeakerHighIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
         ) : (
-          <Hash className="h-4 w-4 shrink-0 text-muted-foreground" />
+          <HashIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
         )}
         <span className="truncate">{name}</span>
       </span>
@@ -164,8 +165,9 @@ function ChannelRow({
           className="h-6 w-6 text-destructive hover:text-destructive"
           disabled={disabled}
           onClick={onDelete}
+          aria-label={`Delete ${name} channel`}
         >
-          <Trash2 className="h-3.5 w-3.5" />
+          <TrashIcon className="h-3.5 w-3.5" />
         </Button>
       )}
     </div>

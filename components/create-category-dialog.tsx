@@ -5,18 +5,9 @@ import { useMutation } from "convex/react";
 import { toast } from "sonner";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Dialog, Input, Label } from "@cloudflare/kumo";
 import { Button } from "@/components/ui/button";
-import { FolderPlus } from "lucide-react";
+import { FolderPlusIcon } from "@phosphor-icons/react";
 
 export function CreateCategoryDialog({ serverId }: { serverId: Id<"servers"> }) {
   const [open, setOpen] = useState(false);
@@ -40,15 +31,13 @@ export function CreateCategoryDialog({ serverId }: { serverId: Id<"servers"> }) 
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button size="sm" variant="secondary" className="gap-1.5" />}>
-        <FolderPlus className="h-4 w-4" />
+    <Dialog.Root open={open} onOpenChange={setOpen}>
+      <Dialog.Trigger render={<Button size="sm" variant="secondary" className="gap-1.5" />}>
+        <FolderPlusIcon className="h-4 w-4" />
         New Category
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-sm">
-        <DialogHeader>
-          <DialogTitle>Create category</DialogTitle>
-        </DialogHeader>
+      </Dialog.Trigger>
+      <Dialog size="sm" className="p-6">
+        <Dialog.Title className="mb-4 text-lg font-semibold">Create category</Dialog.Title>
         <div className="space-y-2">
           <Label htmlFor="category-name">Category name</Label>
           <Input
@@ -59,12 +48,12 @@ export function CreateCategoryDialog({ serverId }: { serverId: Id<"servers"> }) 
             placeholder="NEW CATEGORY"
           />
         </div>
-        <DialogFooter>
+        <div className="mt-6 flex justify-end">
           <Button disabled={!name.trim() || submitting} onClick={handleSubmit}>
             Create
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </div>
+      </Dialog>
+    </Dialog.Root>
   );
 }

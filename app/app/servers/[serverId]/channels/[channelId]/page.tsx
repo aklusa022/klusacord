@@ -10,7 +10,7 @@ import { useServerPermissions } from "@/hooks/use-server-permissions";
 import { PERMISSIONS } from "@/convex/permissions";
 import { ChatPanel } from "@/components/chat/chat-panel";
 import { VoiceChannelView } from "@/components/voice/voice-channel-view";
-import { Hash } from "lucide-react";
+import { HashIcon } from "@phosphor-icons/react";
 
 export default function ChannelPage({
   params,
@@ -55,7 +55,7 @@ export default function ChannelPage({
     <ChatPanel
       header={
         <div className="flex h-12 shrink-0 items-center gap-1.5 border-b px-4 font-semibold">
-          <Hash className="h-4 w-4 text-muted-foreground" />
+          <HashIcon className="h-4 w-4 text-muted-foreground" />
           {channel?.name ?? "channel"}
         </div>
       }

@@ -5,12 +5,8 @@ import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { UserAvatar } from "@/components/user-avatar";
 import { AccountSettingsDialog } from "@/components/account-settings-dialog";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { Settings } from "lucide-react";
+import { Tooltip } from "@cloudflare/kumo";
+import { GearIcon } from "@phosphor-icons/react";
 
 export function UserAccountPanel() {
   const user = useQuery(api.users.getCurrentUser);
@@ -27,23 +23,22 @@ export function UserAccountPanel() {
 
   return (
     <>
-      <Tooltip>
-        <TooltipTrigger
-          render={
-            <button
-              onClick={() => setOpen(true)}
-              className="flex h-12 w-12 items-center justify-center rounded-2xl bg-secondary text-muted-foreground transition-all hover:rounded-xl hover:bg-primary hover:text-primary-foreground"
-            />
-          }
-          aria-label="Account settings"
-        >
-          <UserAvatar name={user.displayName} imageUrl={user.imageUrl} className="h-8 w-8" />
-        </TooltipTrigger>
-        <TooltipContent side="right">
+      <Tooltip
+        side="right"
+        content={
           <span className="flex items-center gap-1">
-            <Settings className="h-3 w-3" /> {user.displayName}
+            <GearIcon className="h-3 w-3" /> {user.displayName}
           </span>
-        </TooltipContent>
+        }
+        render={
+          <button
+            onClick={() => setOpen(true)}
+            className="flex h-12 w-12 items-center justify-center rounded-2xl bg-secondary text-muted-foreground transition-all hover:rounded-xl hover:bg-primary hover:text-primary-foreground"
+            aria-label="Account settings"
+          />
+        }
+      >
+        <UserAvatar name={user.displayName} imageUrl={user.imageUrl} className="h-8 w-8" />
       </Tooltip>
       <AccountSettingsDialog user={user} open={open} onOpenChange={setOpen} />
     </>

@@ -5,15 +5,11 @@ import { usePathname } from "next/navigation";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Separator } from "@/components/ui/separator";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip } from "@cloudflare/kumo";
 import { CreateServerDialog } from "@/components/create-server-dialog";
 import { UserAccountPanel } from "@/components/user-account-panel";
 import { cn } from "@/lib/utils";
-import { MessageCircle } from "lucide-react";
+import { ChatCircleIcon } from "@phosphor-icons/react";
 
 export function ServerRail() {
   const servers = useQuery(api.servers.listMyServers);
@@ -28,7 +24,7 @@ export function ServerRail() {
           pathname.startsWith("/app/friends") || pathname.startsWith("/app/dm")
         }
       >
-        <MessageCircle className="h-6 w-6" />
+        <ChatCircleIcon className="h-6 w-6" />
       </RailButton>
 
       <Separator className="mx-auto w-8" />
@@ -68,21 +64,20 @@ function RailButton({
   children: React.ReactNode;
 }) {
   return (
-    <Tooltip>
-      <TooltipTrigger
-        render={
-          <Link
-            href={href}
-            className={cn(
-              "flex h-12 w-12 items-center justify-center rounded-2xl bg-secondary transition-all hover:rounded-xl hover:bg-primary hover:text-primary-foreground",
-              active && "rounded-xl bg-primary text-primary-foreground",
-            )}
-          />
-        }
-      >
-        {children}
-      </TooltipTrigger>
-      <TooltipContent side="right">{label}</TooltipContent>
+    <Tooltip
+      content={label}
+      side="right"
+      render={
+        <Link
+          href={href}
+          className={cn(
+            "flex h-12 w-12 items-center justify-center rounded-2xl bg-secondary transition-all hover:rounded-xl hover:bg-primary hover:text-primary-foreground",
+            active && "rounded-xl bg-primary text-primary-foreground",
+          )}
+        />
+      }
+    >
+      {children}
     </Tooltip>
   );
 }

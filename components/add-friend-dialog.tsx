@@ -4,19 +4,9 @@ import { useState } from "react";
 import { useMutation } from "convex/react";
 import { toast } from "sonner";
 import { api } from "@/convex/_generated/api";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Dialog, Input, Label } from "@cloudflare/kumo";
 import { Button } from "@/components/ui/button";
-import { UserPlus } from "lucide-react";
+import { UserPlusIcon } from "@phosphor-icons/react";
 
 export function AddFriendDialog() {
   const [open, setOpen] = useState(false);
@@ -47,20 +37,18 @@ export function AddFriendDialog() {
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger
-        render={<Button size="icon" variant="ghost" className="h-6 w-6" />}
+    <Dialog.Root open={open} onOpenChange={setOpen}>
+      <Dialog.Trigger
+        render={<Button size="icon" variant="ghost" className="h-6 w-6" aria-label="Add friend" />}
         aria-label="Add friend"
       >
-        <UserPlus className="h-4 w-4" />
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Add friend</DialogTitle>
-          <DialogDescription>
-            You can add a friend by their exact username.
-          </DialogDescription>
-        </DialogHeader>
+        <UserPlusIcon className="h-4 w-4" />
+      </Dialog.Trigger>
+      <Dialog className="p-6">
+        <Dialog.Title className="mb-1 text-lg font-semibold">Add friend</Dialog.Title>
+        <Dialog.Description className="mb-4 text-sm text-kumo-subtle">
+          You can add a friend by their exact username.
+        </Dialog.Description>
         <div className="space-y-2">
           <Label htmlFor="username">Username</Label>
           <Input
@@ -71,12 +59,12 @@ export function AddFriendDialog() {
             onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
           />
         </div>
-        <DialogFooter>
+        <div className="mt-6 flex justify-end">
           <Button disabled={!username.trim() || submitting} onClick={handleSubmit}>
             Send friend request
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </div>
+      </Dialog>
+    </Dialog.Root>
   );
 }

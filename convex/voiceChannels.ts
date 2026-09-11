@@ -197,7 +197,10 @@ export const joinVoiceChannel = action({
       custom_participant_id: me._id,
     });
 
-    await ctx.runMutation(internal.voiceChannels.recordUserJoinedVoiceChannel, {
+    // Fire-and-forget: the client only needs authToken/meetingId below. The
+    // scheduler guarantees this write runs, it just no longer blocks the
+    // response on the round trip.
+    await ctx.scheduler.runAfter(0, internal.voiceChannels.recordUserJoinedVoiceChannel, {
       channelId: args.channelId,
       serverId: channel.serverId,
       userId: me._id,
@@ -233,6 +236,10 @@ export const heartbeat = mutation({
   },
 });
 
+// Note: for the joiner's own row, this fires once via the scheduled write in
+// `joinVoiceChannel` and once again here when their own webhook arrives —
+// both go through the same delete-then-insert upsert, so it's a harmless
+// redundant write, not a correctness issue.
 export const reconcileParticipantJoined = internalMutation({
   args: { rtkMeetingId: v.string(), userId: v.id("users") },
   handler: async (ctx, args) => {

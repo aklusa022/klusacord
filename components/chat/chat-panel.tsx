@@ -4,9 +4,9 @@ import { ReactNode, useState } from "react";
 import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Input } from "@cloudflare/kumo";
 import { UserAvatar } from "@/components/user-avatar";
-import { Pencil, Trash2 } from "lucide-react";
+import { PencilIcon, TrashIcon } from "@phosphor-icons/react";
 
 export type ChatMessage = {
   _id: string;
@@ -225,8 +225,9 @@ function MessageRow({
                 setDraft(message.content);
                 setEditing(true);
               }}
+              aria-label="Edit message"
             >
-              <Pencil className="h-3.5 w-3.5" />
+              <PencilIcon className="h-3.5 w-3.5" />
             </Button>
           )}
           {canDelete && (
@@ -235,8 +236,9 @@ function MessageRow({
               variant="ghost"
               className="h-6 w-6"
               onClick={() => onDelete()}
+              aria-label="Delete message"
             >
-              <Trash2 className="h-3.5 w-3.5" />
+              <TrashIcon className="h-3.5 w-3.5" />
             </Button>
           )}
         </div>

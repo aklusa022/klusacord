@@ -1,3 +1,10 @@
+/*
+ * Kumo's styles must load before Tailwind's own import so its @theme tokens
+ * register first (see @cloudflare/kumo's README). The @source directive is
+ * required because Tailwind v4 doesn't scan node_modules by default.
+ */
+@source "../node_modules/@cloudflare/kumo/dist/**/*.{js,jsx,ts,tsx}";
+@import "@cloudflare/kumo/styles/tailwind";
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -55,6 +62,16 @@
  * a near-black server rail, dark-gray sidebars/chat, blurple accent.
  * The same palette is used for `:root` and `.dark` since we always
  * render with the `dark` class on <html> — there is no light theme.
+ *
+ * These shadcn-style CSS variables (and the `bg-background`/
+ * `text-muted-foreground`/etc utility classes they back) are kept running
+ * alongside Kumo's own `bg-kumo-*`/`text-kumo-*` semantic tokens during the
+ * Kumo migration: Kumo's own components (Button, Dialog, Input, ...) use
+ * Kumo's tokens internally, while this app's surrounding layout chrome
+ * (sidebars, panels, borders) still reads these variables. Migrating that
+ * remaining chrome to Kumo's tokens file-by-file, then deleting this block
+ * plus the `shadcn/tailwind.css` import above, is a follow-up — see the
+ * Kumo migration plan.
  */
 :root,
 .dark {

@@ -140,6 +140,15 @@ export default defineSchema({
     .index("by_server", ["serverId"])
     .index("by_channel_and_target", ["channelId", "targetType", "targetId"]),
 
+  // Cached copy of RealtimeKit's webhook-signing public key, refreshed
+  // lazily on a TTL to avoid an external HTTPS round trip on every webhook
+  // delivery's signature-verification path.
+  webhookKeyCache: defineTable({
+    provider: v.literal("realtimekit"),
+    publicKeyPem: v.string(),
+    fetchedAt: v.number(),
+  }).index("by_provider", ["provider"]),
+
   messages: defineTable({
     channelId: v.id("channels"),
     authorId: v.id("users"),

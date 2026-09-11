@@ -8,7 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { UserAvatar } from "@/components/user-avatar";
 import { AddFriendDialog } from "@/components/add-friend-dialog";
 import { cn } from "@/lib/utils";
-import { Users } from "lucide-react";
+import { UsersIcon } from "@phosphor-icons/react";
 
 export function FriendsSidebar() {
   const conversations = useQuery(api.dms.listConversations);
@@ -27,7 +27,7 @@ export function FriendsSidebar() {
             pathname === "/app/friends" && "bg-accent text-accent-foreground",
           )}
         >
-          <Users className="h-4 w-4" />
+          <UsersIcon className="h-4 w-4" />
           Friends
         </Link>
       </div>

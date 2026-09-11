@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Avatar as AvatarPrimitive } from "@base-ui/react/avatar"
+import { Avatar as AvatarPrimitive } from "@cloudflare/kumo/primitives/avatar"
 
 import { cn } from "@/lib/utils"
 

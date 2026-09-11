@@ -16,10 +16,17 @@ import {
 import { ServerSettingsDialog } from "@/components/server-settings/server-settings-dialog";
 import { UserAvatar } from "@/components/user-avatar";
 import { useServerPermissions } from "@/hooks/use-server-permissions";
+import { useVoiceCall } from "@/hooks/use-voice-call";
 import { PERMISSIONS } from "@/convex/permissions";
 import { cn } from "@/lib/utils";
-import { ChevronDown, Hash, Settings, UserPlus, Volume2 } from "lucide-react";
-import { useState } from "react";
+import {
+  CaretDownIcon,
+  HashIcon,
+  GearIcon,
+  UserPlusIcon,
+  SpeakerHighIcon,
+} from "@phosphor-icons/react";
+import { useState, type MouseEvent } from "react";
 
 export function ServerSidebar({ serverId }: { serverId: Id<"servers"> }) {
   const server = useQuery(api.servers.getServer, { serverId });
@@ -74,18 +81,18 @@ export function ServerSidebar({ serverId }: { serverId: Id<"servers"> }) {
           }
         >
           <span className="truncate">{server.name}</span>
-          <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+          <CaretDownIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-56">
           <DropdownMenuItem onClick={() => openSettings("invites")}>
-            <UserPlus className="h-4 w-4" /> Invite People
+            <UserPlusIcon className="h-4 w-4" /> Invite People
           </DropdownMenuItem>
           {canOpenSettings && (
             <DropdownMenuItem onClick={() => openSettings("channels")}>
-              <Settings className="h-4 w-4" /> Server Settings
+              <GearIcon className="h-4 w-4" /> Server Settings
             </DropdownMenuItem>
           )}
-          <DropdownMenuItem variant="destructive" onClick={handleLeaveOrDelete}>
+          <DropdownMenuItem variant="danger" onClick={handleLeaveOrDelete}>
             {permissions.isOwner ? "Delete Server" : "Leave Server"}
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -163,31 +170,51 @@ function ChannelLink({
   active: boolean;
   participants: { userId: Id<"users">; user: { displayName: string; imageUrl: string } | null }[];
 }) {
+  const router = useRouter();
+  const { join, activeChannelId, status } = useVoiceCall();
+
+  async function handleClick(e: MouseEvent) {
+    if (channel.type !== "voice") return;
+    e.preventDefault();
+    router.push(`/app/servers/${serverId}/channels/${channel._id}`);
+    if (activeChannelId === channel._id && status !== "idle") return;
+    try {
+      await join(channel._id, serverId);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to join the call");
+    }
+  }
+
   return (
     <div className="flex flex-col gap-1">
       <Link
         href={`/app/servers/${serverId}/channels/${channel._id}`}
+        onClick={handleClick}
         className={cn(
           "flex items-center gap-1.5 rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground",
           active && "bg-accent text-accent-foreground",
         )}
       >
         {channel.type === "voice" ? (
-          <Volume2 className="h-4 w-4 shrink-0" />
+          <SpeakerHighIcon className="h-4 w-4 shrink-0" />
         ) : (
-          <Hash className="h-4 w-4 shrink-0" />
+          <HashIcon className="h-4 w-4 shrink-0" />
         )}
         <span className="truncate">{channel.name}</span>
       </Link>
       {channel.type === "voice" && participants.length > 0 && (
-        <div className="flex flex-wrap gap-1 pl-6">
+        <div className="flex flex-col gap-0.5 pl-6">
           {participants.map((p) => (
-            <UserAvatar
-              key={p.userId}
-              name={p.user?.displayName ?? "?"}
-              imageUrl={p.user?.imageUrl}
-              className="h-5 w-5"
-            />
+            <div key={p.userId} className="flex items-center gap-1.5 py-0.5">
+              <UserAvatar
+                name={p.user?.displayName ?? "?"}
+                imageUrl={p.user?.imageUrl}
+                className="h-5 w-5"
+              />
+              <span className="truncate text-xs text-muted-foreground">
+                {p.user?.displayName ?? "Unknown"}
+              </span>
+            </div>
           ))}
         </div>
       )}

@@ -2,7 +2,16 @@
 
 import { useVoiceCall } from "@/hooks/use-voice-call";
 import { Button } from "@/components/ui/button";
-import { Mic, MicOff, Headphones, HeadphoneOff, Video, VideoOff, PhoneOff, Volume2 } from "lucide-react";
+import {
+  MicrophoneIcon,
+  MicrophoneSlashIcon,
+  HeadphonesIcon,
+  SpeakerSlashIcon,
+  VideoCameraIcon,
+  VideoCameraSlashIcon,
+  PhoneDisconnectIcon,
+  SpeakerHighIcon,
+} from "@phosphor-icons/react";
 
 export function ActiveCallBar() {
   const { status, activeChannelId, isMuted, isDeafened, isCameraOn, toggleMute, toggleCamera, toggleDeafen, leave } =
@@ -12,14 +21,18 @@ export function ActiveCallBar() {
 
   return (
     <div className="flex h-14 shrink-0 items-center gap-2 border-t bg-sidebar px-3">
-      <Volume2 className="h-4 w-4 shrink-0 text-emerald-500" />
+      <SpeakerHighIcon className="h-4 w-4 shrink-0 text-emerald-500" />
       <div className="min-w-0 flex-1">
         <p className="truncate text-xs font-medium text-emerald-500">
           {status === "connecting" ? "Connecting…" : "Voice Connected"}
         </p>
       </div>
       <Button size="icon-sm" variant="ghost" onClick={toggleMute} aria-label={isMuted ? "Unmute" : "Mute"}>
-        {isMuted ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+        {isMuted ? (
+          <MicrophoneSlashIcon className="h-4 w-4" />
+        ) : (
+          <MicrophoneIcon className="h-4 w-4" />
+        )}
       </Button>
       <Button
         size="icon-sm"
@@ -27,7 +40,11 @@ export function ActiveCallBar() {
         onClick={toggleDeafen}
         aria-label={isDeafened ? "Undeafen" : "Deafen"}
       >
-        {isDeafened ? <HeadphoneOff className="h-4 w-4" /> : <Headphones className="h-4 w-4" />}
+        {isDeafened ? (
+          <SpeakerSlashIcon className="h-4 w-4" />
+        ) : (
+          <HeadphonesIcon className="h-4 w-4" />
+        )}
       </Button>
       <Button
         size="icon-sm"
@@ -35,7 +52,11 @@ export function ActiveCallBar() {
         onClick={toggleCamera}
         aria-label={isCameraOn ? "Turn camera off" : "Turn camera on"}
       >
-        {isCameraOn ? <Video className="h-4 w-4" /> : <VideoOff className="h-4 w-4" />}
+        {isCameraOn ? (
+          <VideoCameraIcon className="h-4 w-4" />
+        ) : (
+          <VideoCameraSlashIcon className="h-4 w-4" />
+        )}
       </Button>
       <Button
         size="icon-sm"
@@ -43,7 +64,7 @@ export function ActiveCallBar() {
         onClick={() => void leave()}
         aria-label="Disconnect"
       >
-        <PhoneOff className="h-4 w-4" />
+        <PhoneDisconnectIcon className="h-4 w-4" />
       </Button>
     </div>
   );

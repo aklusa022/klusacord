@@ -7,35 +7,35 @@ import { Authenticated, Unauthenticated, AuthLoading } from "convex/react";
 import { SignInButton, SignUpButton } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import {
-  Hash,
-  MessageCircle,
-  ShieldCheck,
-  Sparkles,
-  UsersRound,
-  Zap,
-} from "lucide-react";
+  HashIcon,
+  ChatCircleIcon,
+  ShieldCheckIcon,
+  SparkleIcon,
+  UsersIcon,
+  LightningIcon,
+} from "@phosphor-icons/react";
 
 const FEATURES = [
   {
-    icon: UsersRound,
+    icon: UsersIcon,
     title: "Servers, categories & channels",
     description:
       "Spin up a server in seconds, organize it with categories, and drop in as many text channels as you need.",
   },
   {
-    icon: ShieldCheck,
+    icon: ShieldCheckIcon,
     title: "Custom roles & permissions",
     description:
       "Create roles with fine-grained permissions — manage channels, manage messages, kick, ban, and more — with a proper role hierarchy.",
   },
   {
-    icon: MessageCircle,
+    icon: ChatCircleIcon,
     title: "Friends & direct messages",
     description:
       "Add friends by username and jump straight into a 1:1 conversation, realtime, no refresh required.",
   },
   {
-    icon: Zap,
+    icon: LightningIcon,
     title: "Built for realtime",
     description:
       "Every message, member list, and role change syncs instantly across everyone in the room, powered by Convex.",
@@ -77,7 +77,7 @@ function NavBar() {
     <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
       <div className="flex items-center gap-2 font-extrabold tracking-tight">
         <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-          <Hash className="h-5 w-5" />
+          <HashIcon className="h-5 w-5" />
         </div>
         Klusacord
       </div>
@@ -157,7 +157,7 @@ function BottomCta() {
   return (
     <section className="mx-auto max-w-4xl px-6 pb-24">
       <div className="flex flex-col items-center gap-4 rounded-3xl border border-border bg-card px-8 py-12 text-center">
-        <Sparkles className="h-8 w-8 text-primary" />
+        <SparkleIcon className="h-8 w-8 text-primary" />
         <h2 className="text-3xl font-bold tracking-tight">
           Your community is waiting.
         </h2>

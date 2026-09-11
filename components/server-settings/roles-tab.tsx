@@ -7,12 +7,10 @@ import { api } from "@/convex/_generated/api";
 import { Id, Doc } from "@/convex/_generated/dataModel";
 import { PERMISSIONS } from "@/convex/permissions";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Input, Label, Checkbox } from "@cloudflare/kumo";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Plus, Trash2 } from "lucide-react";
+import { PlusIcon, TrashIcon } from "@phosphor-icons/react";
 
 const PERMISSION_OPTIONS: {
   flag: number;
@@ -100,8 +98,14 @@ export function RolesTab({ serverId }: { serverId: Id<"servers"> }) {
           <span className="text-xs font-semibold uppercase text-muted-foreground">
             Roles
           </span>
-          <Button size="icon" variant="ghost" className="h-6 w-6" onClick={handleCreateRole}>
-            <Plus className="h-4 w-4" />
+          <Button
+            size="icon"
+            variant="ghost"
+            className="h-6 w-6"
+            onClick={handleCreateRole}
+            aria-label="Create role"
+          >
+            <PlusIcon className="h-4 w-4" />
           </Button>
         </div>
         <ScrollArea className="flex-1">
@@ -191,8 +195,8 @@ function RoleEditor({
               onKeyDown={(e) => e.key === "Enter" && saveName()}
             />
             {!role.isDefault && (
-              <Button size="icon" variant="outline" onClick={handleDelete}>
-                <Trash2 className="h-4 w-4" />
+              <Button size="icon" variant="outline" onClick={handleDelete} aria-label={`Delete ${role.name} role`}>
+                <TrashIcon className="h-4 w-4" />
               </Button>
             )}
           </div>

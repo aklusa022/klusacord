@@ -21,6 +21,7 @@ import type * as roles from "../roles.js";
 import type * as servers from "../servers.js";
 import type * as users from "../users.js";
 import type * as voiceChannels from "../voiceChannels.js";
+import type * as webhookKeys from "../webhookKeys.js";
 
 import type {
   ApiFromModules,
@@ -42,6 +43,7 @@ declare const fullApi: ApiFromModules<{
   servers: typeof servers;
   users: typeof users;
   voiceChannels: typeof voiceChannels;
+  webhookKeys: typeof webhookKeys;
 }>;
 
 /**

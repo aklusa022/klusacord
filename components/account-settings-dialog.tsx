@@ -6,19 +6,11 @@ import { useClerk } from "@clerk/nextjs";
 import { toast } from "sonner";
 import { api } from "@/convex/_generated/api";
 import { Doc } from "@/convex/_generated/dataModel";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Dialog, Input, Label } from "@cloudflare/kumo";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { UserAvatar } from "@/components/user-avatar";
-import { LogOut, ShieldCheck } from "lucide-react";
+import { SignOutIcon, ShieldCheckIcon, XIcon } from "@phosphor-icons/react";
 
 export function AccountSettingsDialog({
   user,
@@ -57,14 +49,22 @@ export function AccountSettingsDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>My Account</DialogTitle>
-          <DialogDescription>
-            Manage how you appear across Klusacord.
-          </DialogDescription>
-        </DialogHeader>
+    <Dialog.Root open={open} onOpenChange={onOpenChange}>
+      <Dialog size="lg" className="p-6">
+        <div className="mb-4 flex items-start justify-between gap-4">
+          <div>
+            <Dialog.Title className="text-lg font-semibold">My Account</Dialog.Title>
+            <Dialog.Description className="text-sm text-kumo-subtle">
+              Manage how you appear across Klusacord.
+            </Dialog.Description>
+          </div>
+          <Dialog.Close
+            aria-label="Close"
+            render={<Button variant="ghost" size="icon-sm" aria-label="Close" />}
+          >
+            <XIcon />
+          </Dialog.Close>
+        </div>
 
         <div className="flex items-center gap-3">
           <UserAvatar name={displayName || user.displayName} imageUrl={user.imageUrl} className="h-14 w-14" />
@@ -109,7 +109,7 @@ export function AccountSettingsDialog({
             className="w-full justify-start gap-2"
             onClick={() => clerk.openUserProfile()}
           >
-            <ShieldCheck className="h-4 w-4" />
+            <ShieldCheckIcon className="h-4 w-4" />
             Manage email, password &amp; security
           </Button>
           <Button
@@ -117,11 +117,11 @@ export function AccountSettingsDialog({
             className="w-full justify-start gap-2 text-destructive hover:text-destructive"
             onClick={() => clerk.signOut()}
           >
-            <LogOut className="h-4 w-4" />
+            <SignOutIcon className="h-4 w-4" />
             Sign out
           </Button>
         </div>
-      </DialogContent>
-    </Dialog>
+      </Dialog>
+    </Dialog.Root>
   );
 }

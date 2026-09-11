@@ -7,7 +7,7 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Copy, Trash2 } from "lucide-react";
+import { CopyIcon, TrashIcon } from "@phosphor-icons/react";
 
 export function InvitesTab({ serverId }: { serverId: Id<"servers"> }) {
   const invites = useQuery(api.invites.listServerInvites, { serverId });
@@ -59,15 +59,17 @@ export function InvitesTab({ serverId }: { serverId: Id<"servers"> }) {
                   size="icon"
                   variant="ghost"
                   onClick={() => copyLink(invite.code)}
+                  aria-label="Copy invite link"
                 >
-                  <Copy className="h-4 w-4" />
+                  <CopyIcon className="h-4 w-4" />
                 </Button>
                 <Button
                   size="icon"
                   variant="ghost"
                   onClick={() => revokeInvite({ inviteId: invite._id })}
+                  aria-label="Revoke invite"
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <TrashIcon className="h-4 w-4" />
                 </Button>
               </div>
             </div>
