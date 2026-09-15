@@ -65,6 +65,8 @@
   // Dev environment — the same Convex dev deployment + Clerk dev/test
   // instance this project has always used for local-style testing, just
   // deployed to its own subdomain instead of sharing the prod domain.
+  // Reuses the original pre-rebrand Worker ("disclone-app") rather than
+  // standing up a separate new Worker for this.
   //
   // NOTE: `vinext build` flattens only the top-level config into
   // dist/server/wrangler.json — it does not carry this `env.dev` block
@@ -75,7 +77,7 @@
   // `bun run deploy:vinext:dev`.
   "env": {
     "dev": {
-      "name": "outpost-app-dev",
+      "name": "disclone-app",
       "routes": [
         {
           "pattern": "outpost-dev.zenfora.io",

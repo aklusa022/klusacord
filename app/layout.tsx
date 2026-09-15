@@ -20,6 +20,13 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Outpost",
   description: "A voice chat platform for your community.",
+  icons: {
+    icon: [
+      { url: "/outpost-icon-120.webp", type: "image/webp", sizes: "120x120" },
+      { url: "/outpost-icon-350.webp", type: "image/webp", sizes: "350x350" },
+    ],
+    apple: "/outpost-icon-350.webp",
+  },
 };
 
 export default function RootLayout({
