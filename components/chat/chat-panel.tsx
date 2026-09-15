@@ -64,13 +64,17 @@ export function ChatPanel({
     <div className="flex h-full w-full flex-col">
       {header}
       <ScrollArea className="flex-1">
-        <div className="flex flex-col-reverse gap-1 p-4">
+        <div className="flex min-h-full flex-col-reverse gap-1 p-4">
           {/*
             `messages` is newest-first (descending), matching the `desc`
             paginated query. This container is `flex-col-reverse`, which
             flips the *visual* order back to oldest-at-top/newest-at-bottom
             while keeping the browser anchored to the bottom by default —
             so we deliberately do NOT reverse the array here.
+            `min-h-full` is required for that bottom-anchoring: without it
+            the div only grows as tall as its content, so with few messages
+            it sits at the top of the (block-level) ScrollArea viewport
+            instead of being pushed down to the bottom.
           */}
           {messages.map((message, idx, arr) => {
             // In this descending array, the chronologically-previous
