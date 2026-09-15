@@ -19,10 +19,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Klusacord",
-  description: "A Discord-style chat app built with Next.js, Convex, and Clerk.",
-  icons: {
-    icon: "/convex.svg",
-  },
+  description: "A voice chat platform for your community.",
 };
 
 export default function RootLayout({

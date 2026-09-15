@@ -12,15 +12,21 @@ import {
   ShieldCheckIcon,
   SparkleIcon,
   UsersIcon,
-  LightningIcon,
+  MicrophoneIcon,
 } from "@phosphor-icons/react";
 
 const FEATURES = [
   {
+    icon: MicrophoneIcon,
+    title: "Voice channels that just work",
+    description:
+      "Drop into a voice channel with one click and start talking — crisp, low-latency audio with everyone in the room.",
+  },
+  {
     icon: UsersIcon,
     title: "Servers, categories & channels",
     description:
-      "Spin up a server in seconds, organize it with categories, and drop in as many text channels as you need.",
+      "Spin up a server in seconds, organize it with categories, and mix voice and text channels however you like.",
   },
   {
     icon: ShieldCheckIcon,
@@ -33,12 +39,6 @@ const FEATURES = [
     title: "Friends & direct messages",
     description:
       "Add friends by username and jump straight into a 1:1 conversation, realtime, no refresh required.",
-  },
-  {
-    icon: LightningIcon,
-    title: "Built for realtime",
-    description:
-      "Every message, member list, and role change syncs instantly across everyone in the room, powered by Convex.",
   },
 ];
 
@@ -104,16 +104,17 @@ function Hero() {
       </div>
       <div className="mx-auto flex max-w-4xl flex-col items-center gap-6 px-6 pb-24 pt-16 text-center">
         <span className="rounded-full border border-border bg-card px-4 py-1 text-xs font-medium text-muted-foreground">
-          Realtime chat, powered by Convex
+          Voice chat for your community
         </span>
         <h1 className="text-5xl font-black tracking-tight text-balance sm:text-6xl">
-          Your place to talk,
+          Hop in, talk,
           <br />
-          <span className="text-primary">without the noise.</span>
+          <span className="text-primary">no friction.</span>
         </h1>
         <p className="max-w-xl text-lg text-muted-foreground text-balance">
-          Klusacord is a fast, text-first home for your community — servers,
-          roles &amp; permissions, channels, friends, and DMs, all realtime.
+          Klusacord is a fast voice chat platform for your community — jump
+          into a voice channel with one click, plus servers, roles &amp;
+          permissions, text channels, friends, and DMs, all realtime.
         </p>
         <div className="mt-2 flex flex-wrap items-center justify-center gap-3">
           <SignUpButton mode="modal">
