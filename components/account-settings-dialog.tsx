@@ -63,7 +63,7 @@ export function AccountSettingsDialog({
           <div>
             <Dialog.Title className="text-lg font-semibold">My Account</Dialog.Title>
             <Dialog.Description className="text-sm text-kumo-subtle">
-              Manage how you appear across Klusacord.
+              Manage how you appear across Outpost.
             </Dialog.Description>
           </div>
           <Dialog.Close

@@ -63,7 +63,7 @@
 }
 
 /*
- * Klusacord is dark-mode-only, styled after Discord's dark theme:
+ * Outpost is dark-mode-only, styled after Discord's dark theme:
  * a near-black server rail, dark-gray sidebars/chat, blurple accent.
  * The same palette is used for `:root` and `.dark` since we always
  * render with the `dark` class on <html> — there is no light theme.

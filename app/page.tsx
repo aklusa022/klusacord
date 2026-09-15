@@ -79,7 +79,7 @@ function NavBar() {
         <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary text-primary-foreground">
           <HashIcon className="h-5 w-5" />
         </div>
-        Klusacord
+        Outpost
       </div>
       <div className="flex items-center gap-2">
         <SignInButton mode="modal">
@@ -112,7 +112,7 @@ function Hero() {
           <span className="text-primary">no friction.</span>
         </h1>
         <p className="max-w-xl text-lg text-muted-foreground text-balance">
-          Klusacord is a fast voice chat platform for your community — jump
+          Outpost is a fast voice chat platform for your community — jump
           into a voice channel with one click, plus servers, roles &amp;
           permissions, text channels, friends, and DMs, all realtime.
         </p>
@@ -179,7 +179,7 @@ function Footer() {
   return (
     <footer className="border-t border-border">
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-6 py-8 text-sm text-muted-foreground sm:flex-row">
-        <span>© {new Date().getFullYear()} Klusacord</span>
+        <span>© {new Date().getFullYear()} Outpost</span>
         <Link href="/app" className="hover:text-foreground">
           Go to app
         </Link>

@@ -12,7 +12,7 @@ Convex agent skills for common tasks can be installed by running
 
 <!-- convex-ai-end -->
 
-## Klusacord project notes
+## Outpost project notes
 
 - Package manager: `bun` (see `bun.lock`).
 - Dev: `bun run dev` (runs `next dev` + `convex dev` in parallel).

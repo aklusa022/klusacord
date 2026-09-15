@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Klusacord",
+  title: "Outpost",
   description: "A voice chat platform for your community.",
 };
 

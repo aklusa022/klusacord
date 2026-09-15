@@ -17,7 +17,7 @@ export function FriendsSidebar() {
   return (
     <div className="flex h-full w-60 shrink-0 flex-col border-r bg-sidebar">
       <div className="flex h-12 items-center border-b px-4 font-semibold shadow-sm">
-        Klusacord
+        Outpost
       </div>
       <div className="p-2">
         <Link
